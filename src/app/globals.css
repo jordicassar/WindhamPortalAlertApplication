@@ -1,47 +1,65 @@
 @import 'tailwindcss';
 
-/* Design tokens. Tailwind utilities like bg-surface / text-muted map to these. */
+/*
+ * Design tokens. Tailwind utilities like bg-surface / text-muted map to these.
+ * Readers skew 30-70: every text/background pair clears WCAG AA (4.5:1), body and muted
+ * text clear AAA (7:1) on cards, and the base size is 17px (see html below).
+ */
 :root {
-  --bg: #f4f6f9;
+  --bg: #f3f6fa;
   --surface: #ffffff;
-  --surface-2: #eef1f5;
-  --text: #1b2533;
-  --muted: #5c6878;
-  --border: #d8dee6;
-  --brand: #1f4e79;
-  --brand-hover: #173d60;
+  --surface-2: #edf1f6;
+  --text: #121c2b;
+  --muted: #4a5668;
+  --border: #d3dbe5;
+  --brand: #1a4f86;
+  --brand-hover: #133d69;
   --brand-contrast: #ffffff;
-  --header: #1f4e79;
-  --emergency: #b3261e;
-  --emergency-soft: #fbe9e7;
-  --advisory: #8a5100;
-  --advisory-soft: #fff3dc;
-  --info: #1f5fa8;
-  --info-soft: #e5effa;
-  --ok: #1e7b45;
-  --ok-soft: #e3f4ea;
+  --brand-soft: #e5eef9;
+  --header: #0e2b4b;
+  --hero-from: #0e2b4b;
+  --hero-to: #1d5c96;
+  --emergency: #b42318;
+  --emergency-strong: #b42318;
+  --emergency-soft: #fdeceb;
+  --advisory: #8f4f06;
+  --advisory-soft: #fff3de;
+  --info: #1b5eab;
+  --info-soft: #e6f0fb;
+  --ok: #067647;
+  --ok-soft: #e1f5ea;
+  --ring: #2f7ae5;
+  --shadow: 0 1px 2px rgb(16 24 40 / 0.05), 0 4px 16px -4px rgb(16 24 40 / 0.08);
+  --shadow-lg: 0 2px 4px rgb(16 24 40 / 0.06), 0 16px 40px -12px rgb(16 24 40 / 0.18);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #11161d;
-    --surface: #19202a;
-    --surface-2: #222b37;
-    --text: #e6ebf2;
-    --muted: #9aa6b5;
-    --border: #2f3a48;
-    --brand: #6aa5e0;
-    --brand-hover: #8bbbeb;
-    --brand-contrast: #0d1620;
-    --header: #16304b;
-    --emergency: #f2857c;
-    --emergency-soft: #3a1c1a;
-    --advisory: #f0b453;
-    --advisory-soft: #3a2b12;
-    --info: #7db3ee;
-    --info-soft: #1a2c42;
-    --ok: #6fd19a;
-    --ok-soft: #173325;
+    --bg: #0c121a;
+    --surface: #151d28;
+    --surface-2: #1e2835;
+    --text: #edf1f7;
+    --muted: #a9b5c4;
+    --border: #2b3747;
+    --brand: #7db4f0;
+    --brand-hover: #9fc8f6;
+    --brand-contrast: #0a1420;
+    --brand-soft: #16283d;
+    --header: #0a1a2c;
+    --hero-from: #0a1a2c;
+    --hero-to: #143a60;
+    --emergency: #ff8f85;
+    --emergency-strong: #a3231a;
+    --emergency-soft: #3a1714;
+    --advisory: #f6bb5c;
+    --advisory-soft: #35260f;
+    --info: #88bdf5;
+    --info-soft: #14283f;
+    --ok: #72d8a3;
+    --ok-soft: #11301f;
+    --ring: #7db4f0;
+    --shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 4px 16px -4px rgb(0 0 0 / 0.4);
+    --shadow-lg: 0 2px 4px rgb(0 0 0 / 0.3), 0 16px 40px -12px rgb(0 0 0 / 0.6);
   }
 }
 
@@ -55,8 +73,10 @@
   --color-brand: var(--brand);
   --color-brand-hover: var(--brand-hover);
   --color-brand-contrast: var(--brand-contrast);
+  --color-brand-soft: var(--brand-soft);
   --color-header: var(--header);
   --color-emergency: var(--emergency);
+  --color-emergency-strong: var(--emergency-strong);
   --color-emergency-soft: var(--emergency-soft);
   --color-advisory: var(--advisory);
   --color-advisory-soft: var(--advisory-soft);
@@ -64,30 +84,69 @@
   --color-info-soft: var(--info-soft);
   --color-ok: var(--ok);
   --color-ok-soft: var(--ok-soft);
-  --font-sans: var(--font-geist-sans), system-ui, sans-serif;
+  --shadow-card: var(--shadow);
+  --shadow-raised: var(--shadow-lg);
+  --font-sans: var(--font-atkinson), system-ui, sans-serif;
+}
+
+/* 17px base: every rem-based size and spacing scales up a little, and still follows the
+   reader's own browser text-size setting. */
+html {
+  font-size: 106.25%;
 }
 
 body {
   background: var(--bg);
   color: var(--text);
+  text-rendering: optimizeLegibility;
 }
 
 :focus-visible {
-  outline: 3px solid #2f7ae5;
+  outline: 3px solid var(--ring);
   outline-offset: 2px;
+}
+
+/* Full-bleed band inside the centered <main>; body clips the scrollbar overhang. */
+.full-bleed {
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+}
+
+.hero {
+  background:
+    radial-gradient(1200px 400px at 85% -10%, rgb(255 255 255 / 0.12), transparent 60%),
+    linear-gradient(135deg, var(--hero-from), var(--hero-to));
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .pulse-dot {
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+}
+@keyframes pulse-dot {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgb(255 255 255 / 0.55);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgb(255 255 255 / 0);
+  }
 }
 
 /* Rich-text alert bodies, in the reader and the editor. */
 .prose-alert {
   overflow-wrap: anywhere;
-  line-height: 1.6;
+  font-size: 1.05rem;
+  line-height: 1.7;
 }
 .prose-alert > * + * {
-  margin-top: 0.6em;
+  margin-top: 0.75em;
 }
 .prose-alert a {
   color: var(--brand);
+  font-weight: 600;
   text-decoration: underline;
+  text-underline-offset: 3px;
 }
 .prose-alert strong,
 .prose-alert b {
@@ -110,17 +169,17 @@ body {
   font-weight: 700;
 }
 .prose-alert blockquote {
-  border-left: 3px solid var(--border);
-  padding-left: 0.8em;
+  border-left: 4px solid var(--border);
+  padding-left: 1em;
   color: var(--muted);
 }
 .prose-alert img {
   max-width: 100%;
   height: auto;
-  border-radius: 0.5rem;
+  border-radius: 0.75rem;
 }
 .prose-alert img.ProseMirror-selectednode {
-  outline: 3px solid #2f7ae5;
+  outline: 3px solid var(--ring);
 }
 .tiptap:focus {
   outline: none;

@@ -2,27 +2,26 @@ import Link from 'next/link';
 import { Suspense } from 'react';
 import { logout } from '@/app/actions/auth';
 import { getCurrentUser } from '@/lib/dal';
+import { BellIcon, UserIcon } from './icons';
 
 const navLink =
-  'rounded-full px-3.5 py-1.5 text-sm font-semibold text-white/90 hover:bg-white/15 hover:text-white';
+  'inline-flex min-h-11 items-center gap-2 rounded-xl px-4 text-base font-semibold text-white/90 transition-colors hover:bg-white/15 hover:text-white';
 
 export function SiteHeader() {
   return (
-    <header className="bg-header text-white">
+    <header className="border-b border-white/10 bg-header text-white">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
-        <Link href="/" className="flex items-center gap-3">
+        <Link href="/" className="flex items-center gap-3 rounded-xl">
           <span
             aria-hidden
-            className="grid size-10 place-items-center rounded-full bg-white text-lg font-extrabold text-[#1f4e79]"
+            className="grid size-11 place-items-center rounded-xl bg-gradient-to-br from-white to-[#cfe0f5] text-[#0e2b4b] shadow-md"
           >
-            W
+            <BellIcon className="size-6" />
           </span>
           <span>
-            <span className="block text-base font-bold leading-tight sm:text-lg">
-              Windham Community Notifications
-            </span>
-            <span className="block text-[0.7rem] uppercase tracking-widest text-white/75">
-              Town alerts &amp; news
+            <span className="block text-lg font-bold leading-tight sm:text-xl">Windham</span>
+            <span className="block text-sm leading-tight text-white/80">
+              Community Notifications
             </span>
           </span>
         </Link>
@@ -45,6 +44,7 @@ async function StaffNav() {
   if (!user) {
     return (
       <Link href="/login" className={navLink}>
+        <UserIcon className="size-5" />
         Staff sign in
       </Link>
     );
@@ -60,7 +60,7 @@ async function StaffNav() {
         </Link>
       )}
       <form action={logout} className="flex items-center">
-        <span className="hidden px-2 text-xs text-white/75 md:inline">{user.name}</span>
+        <span className="hidden px-2 text-sm text-white/80 md:inline">{user.name}</span>
         <button type="submit" className={navLink}>
           Sign out
         </button>
