@@ -49,16 +49,35 @@ Useful scripts: `npm run lint`, `npm run typecheck`, `npm run format`, `npm run 
 
 ## Deploying (sandbox)
 
-The sandbox runs on **Vercel** with a **Neon** Postgres database, added through the Neon
-integration in the Vercel Marketplace. Pushes to `main` deploy to production; every pull request
-gets its own preview URL **and its own Neon database branch** (a copy of the sandbox data), so
-schema changes can be tried without touching the shared sandbox.
+**Live sandbox:** https://windhamportalalertapplication-jordicassars-projects.vercel.app
 
-On Vercel the build runs `npm run vercel-build`, which applies pending migrations
-(`prisma migrate deploy`) before `next build`. The build prerenders the residents' page, so it
-needs the database either way.
+| Piece    | Where                                                                                   |
+| -------- | --------------------------------------------------------------------------------------- |
+| Hosting  | Vercel project `windham_portal_alert_application` (team `jordicassars-projects`)        |
+| Database | Neon Postgres `windham-portal-db` (free plan, `iad1`), added via the Vercel Marketplace |
+| Source   | GitHub `jordicassar/WindhamPortalAlertApplication`, connected to the Vercel project     |
 
-Environment variables in Vercel:
+The sandbox is behind **Vercel Authentication** (Settings → Deployment Protection), so only
+people signed in to the Vercel team can open it. Turn that off to share it more widely.
+
+### How a deploy works
+
+Pushes to `main` deploy to production, and every pull request gets its own preview URL. Vercel
+runs `npm run vercel-build`, which:
+
+1. generates the Prisma client,
+2. applies any pending migrations to Neon (`prisma migrate deploy`), and
+3. runs `next build`, which prerenders the residents' page from the database.
+
+If the build fails, the previous deployment stays live. To deploy without a push, run
+`vercel --prod` from a linked checkout (`vercel link`), or use **Redeploy** in the dashboard on a
+deployment of the latest commit.
+
+Preview builds use the Preview environment variables. If **preview branching** is enabled on the
+Neon resource, each preview gets its own copy of the database; otherwise a pull request's
+migration is applied to the shared sandbox database when its preview builds.
+
+### Environment variables
 
 | Variable                | Value                                                                   |
 | ----------------------- | ----------------------------------------------------------------------- |
@@ -67,11 +86,23 @@ Environment variables in Vercel:
 | `SESSION_SECRET`        | Random 32+ character string: `openssl rand -base64 32`                  |
 | `SEED_STAFF_PASSWORD`   | Password for the demo staff accounts; share it privately with the team  |
 
-Seed the sandbox database once, from your machine (preview branches copy this data):
+The Neon integration also adds `POSTGRES_*`, `PG*` and `NEON_PROJECT_ID`; the app doesn't use
+them.
+
+### Seeding the sandbox (once)
+
+Deploys create the tables but not the demo data. Seed from your machine with the production
+variables; the seed is safe to re-run and only adds what's missing:
 
 ```bash
-DATABASE_URL="<unpooled url>" SEED_STAFF_PASSWORD="…" npx prisma db seed
+vercel env pull /tmp/windham-prod.env --environment=production --yes
+(set -a; . /tmp/windham-prod.env; set +a; DATABASE_URL="$DATABASE_URL_UNPOOLED" npx prisma db seed)
+rm -f /tmp/windham-prod.env
 ```
+
+The residents' page picks up the new data within a minute; no redeploy is needed. Don't pull
+production variables into `.env.local`: Next.js would load them for `npm run dev` ahead of your
+local `.env`.
 
 ## Built to handle traffic spikes
 
