@@ -49,23 +49,28 @@ Useful scripts: `npm run lint`, `npm run typecheck`, `npm run format`, `npm run 
 
 ## Deploying (sandbox)
 
-The sandbox runs on **Vercel** with a **Neon** Postgres database. Every pull request gets its own
-preview URL, so changes can be reviewed before they merge.
+The sandbox runs on **Vercel** with a **Neon** Postgres database, added through the Neon
+integration in the Vercel Marketplace. Pushes to `main` deploy to production; every pull request
+gets its own preview URL **and its own Neon database branch** (a copy of the sandbox data), so
+schema changes can be tried without touching the shared sandbox.
 
-Environment variables to set in Vercel:
+On Vercel the build runs `npm run vercel-build`, which applies pending migrations
+(`prisma migrate deploy`) before `next build`. The build prerenders the residents' page, so it
+needs the database either way.
 
-| Variable              | Value                                                                  |
-| --------------------- | ---------------------------------------------------------------------- |
-| `DATABASE_URL`        | Neon **pooled** connection string (host contains `-pooler`)            |
-| `DIRECT_URL`          | Neon direct connection string (used only by migrations)                |
-| `SESSION_SECRET`      | Random 32+ character string: `openssl rand -base64 32`                 |
-| `SEED_STAFF_PASSWORD` | Password for the demo staff accounts; share it privately with the team |
+Environment variables in Vercel:
 
-Apply migrations and seed from your machine against the sandbox database:
+| Variable                | Value                                                                   |
+| ----------------------- | ----------------------------------------------------------------------- |
+| `DATABASE_URL`          | Set by the Neon integration: **pooled** connection (host has `-pooler`) |
+| `DATABASE_URL_UNPOOLED` | Set by the Neon integration: direct connection, used by migrations      |
+| `SESSION_SECRET`        | Random 32+ character string: `openssl rand -base64 32`                  |
+| `SEED_STAFF_PASSWORD`   | Password for the demo staff accounts; share it privately with the team  |
+
+Seed the sandbox database once, from your machine (preview branches copy this data):
 
 ```bash
-DATABASE_URL="<direct url>" npx prisma migrate deploy
-DATABASE_URL="<direct url>" SEED_STAFF_PASSWORD="…" npx prisma db seed
+DATABASE_URL="<unpooled url>" SEED_STAFF_PASSWORD="…" npx prisma db seed
 ```
 
 ## Built to handle traffic spikes
