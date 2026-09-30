@@ -10,7 +10,10 @@ import { PrismaClient } from '../src/generated/prisma/client';
  */
 
 const db = new PrismaClient({
-  adapter: new PrismaPg({ connectionString: process.env.DIRECT_URL ?? process.env.DATABASE_URL }),
+  adapter: new PrismaPg({
+    connectionString:
+      process.env.DIRECT_URL ?? process.env.DATABASE_URL_UNPOOLED ?? process.env.DATABASE_URL,
+  }),
 });
 
 const CATEGORIES = [
