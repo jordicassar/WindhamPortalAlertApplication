@@ -1,5 +1,6 @@
 import type { AlertStatus, Severity } from '@/generated/prisma/enums';
 import { SEVERITY_LABEL, STATUS_LABEL } from '@/lib/format';
+import { CheckCircleIcon, InfoIcon, SirenIcon, WarningIcon } from './icons';
 
 /** Small shared building blocks. Kept as class strings so server and client components can use them. */
 
@@ -8,12 +9,13 @@ export function cx(...classes: (string | false | null | undefined)[]): string {
 }
 
 export const button = {
-  base: 'inline-flex items-center justify-center gap-1.5 rounded-lg border px-3.5 py-2 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60',
-  primary: 'border-brand bg-brand text-brand-contrast hover:bg-brand-hover',
-  secondary: 'border-border bg-surface hover:bg-surface-2',
+  base: 'inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border px-5 py-2.5 text-base font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60',
+  primary:
+    'border-brand bg-brand text-brand-contrast shadow-card hover:border-brand-hover hover:bg-brand-hover',
+  secondary: 'border-border bg-surface shadow-card hover:bg-surface-2',
   ghost: 'border-transparent bg-transparent hover:bg-surface-2',
   danger: 'border-border bg-surface text-emergency hover:bg-emergency-soft',
-  small: 'px-2.5 py-1 text-xs',
+  small: 'min-h-9 rounded-lg px-3 py-1.5 text-sm',
 };
 
 export function btn(
@@ -24,21 +26,25 @@ export function btn(
 }
 
 export const input =
-  'w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm placeholder:text-muted';
+  'min-h-12 w-full rounded-xl border border-border bg-surface px-4 py-2.5 text-base shadow-[inset_0_1px_2px_rgb(16_24_40/0.05)] transition-colors placeholder:text-muted hover:border-muted focus:border-brand';
 
-export const card = 'rounded-xl border border-border bg-surface shadow-sm';
+/** Visible form label; placeholders alone are hard to read and vanish once typing starts. */
+export const label = 'grid gap-1.5 text-base font-semibold';
 
-const SEVERITY_STYLE: Record<Severity, string> = {
+export const checkbox = 'size-5 shrink-0 cursor-pointer rounded accent-brand';
+
+export const card = 'rounded-2xl border border-border bg-surface shadow-card';
+
+export const SEVERITY_STYLE: Record<Severity, string> = {
   INFO: 'bg-info-soft text-info',
   ADVISORY: 'bg-advisory-soft text-advisory',
   EMERGENCY: 'bg-emergency-soft text-emergency',
 };
 
-export const SEVERITY_BORDER: Record<Severity, string> = {
-  INFO: 'border-l-info',
-  ADVISORY: 'border-l-advisory',
-  EMERGENCY: 'border-l-emergency',
-};
+export function SeverityIcon({ severity, className }: { severity: Severity; className?: string }) {
+  const Icon = { INFO: InfoIcon, ADVISORY: WarningIcon, EMERGENCY: SirenIcon }[severity];
+  return <Icon className={className} />;
+}
 
 const STATUS_STYLE: Record<AlertStatus, string> = {
   DRAFT: 'bg-surface-2 text-muted',
@@ -48,10 +54,16 @@ const STATUS_STYLE: Record<AlertStatus, string> = {
   ARCHIVED: 'bg-surface-2 text-muted',
 };
 
-const pill = 'inline-block whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-bold';
+const pill =
+  'inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-0.5 text-sm font-bold';
 
 export function SeverityBadge({ severity }: { severity: Severity }) {
-  return <span className={cx(pill, SEVERITY_STYLE[severity])}>{SEVERITY_LABEL[severity]}</span>;
+  return (
+    <span className={cx(pill, SEVERITY_STYLE[severity])}>
+      <SeverityIcon severity={severity} className="size-3.5" />
+      {SEVERITY_LABEL[severity]}
+    </span>
+  );
 }
 
 export function StatusBadge({ status }: { status: AlertStatus }) {
@@ -60,21 +72,26 @@ export function StatusBadge({ status }: { status: AlertStatus }) {
 
 export function Notice({ kind, children }: { kind: 'error' | 'ok'; children: React.ReactNode }) {
   return (
-    <p
+    <div
       role={kind === 'error' ? 'alert' : 'status'}
       className={cx(
-        'rounded-lg px-3 py-2 text-sm font-medium',
+        'flex gap-2.5 rounded-xl px-4 py-3 text-base font-medium',
         kind === 'error' ? 'bg-emergency-soft text-emergency' : 'bg-ok-soft text-ok',
       )}
     >
-      {children}
-    </p>
+      {kind === 'error' ? (
+        <WarningIcon className="mt-0.5 size-5 shrink-0" />
+      ) : (
+        <CheckCircleIcon className="mt-0.5 size-5 shrink-0" />
+      )}
+      <p>{children}</p>
+    </div>
   );
 }
 
 export function EmptyState({ children }: { children: React.ReactNode }) {
   return (
-    <div className="rounded-xl border border-dashed border-border bg-surface p-8 text-center text-muted">
+    <div className="rounded-2xl border-2 border-dashed border-border bg-surface px-6 py-10 text-center text-lg text-muted">
       {children}
     </div>
   );
@@ -88,8 +105,8 @@ export function PageTitle({
   aside?: React.ReactNode;
 }) {
   return (
-    <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-      <h1 className="text-2xl font-bold">{children}</h1>
+    <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+      <h1 className="text-3xl font-bold tracking-tight">{children}</h1>
       {aside}
     </div>
   );

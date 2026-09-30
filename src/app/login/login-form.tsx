@@ -3,17 +3,17 @@
 import { useActionState } from 'react';
 import { login } from '@/app/actions/auth';
 import { SubmitButton } from '@/components/submit-button';
-import { card, input, Notice } from '@/components/ui';
+import { card, input, label, Notice } from '@/components/ui';
 
 export function LoginForm() {
   const [state, action] = useActionState(login, {});
   return (
-    <form action={action} className={`${card} mt-5 grid gap-4 p-5`}>
-      <label className="grid gap-1 text-sm font-semibold">
+    <form action={action} className={`${card} mt-6 grid gap-5 p-6`}>
+      <label className={label}>
         Email
         <input name="email" type="email" autoComplete="username" required className={input} />
       </label>
-      <label className="grid gap-1 text-sm font-semibold">
+      <label className={label}>
         Password
         <input
           name="password"
@@ -24,7 +24,9 @@ export function LoginForm() {
         />
       </label>
       {state.error && <Notice kind="error">{state.error}</Notice>}
-      <SubmitButton pendingText="Signing in…">Sign in</SubmitButton>
+      <SubmitButton pendingText="Signing in…" className="w-full py-3 text-lg">
+        Sign in
+      </SubmitButton>
     </form>
   );
 }
