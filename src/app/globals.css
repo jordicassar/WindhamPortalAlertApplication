@@ -1,0 +1,134 @@
+@import 'tailwindcss';
+
+/* Design tokens. Tailwind utilities like bg-surface / text-muted map to these. */
+:root {
+  --bg: #f4f6f9;
+  --surface: #ffffff;
+  --surface-2: #eef1f5;
+  --text: #1b2533;
+  --muted: #5c6878;
+  --border: #d8dee6;
+  --brand: #1f4e79;
+  --brand-hover: #173d60;
+  --brand-contrast: #ffffff;
+  --header: #1f4e79;
+  --emergency: #b3261e;
+  --emergency-soft: #fbe9e7;
+  --advisory: #8a5100;
+  --advisory-soft: #fff3dc;
+  --info: #1f5fa8;
+  --info-soft: #e5effa;
+  --ok: #1e7b45;
+  --ok-soft: #e3f4ea;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #11161d;
+    --surface: #19202a;
+    --surface-2: #222b37;
+    --text: #e6ebf2;
+    --muted: #9aa6b5;
+    --border: #2f3a48;
+    --brand: #6aa5e0;
+    --brand-hover: #8bbbeb;
+    --brand-contrast: #0d1620;
+    --header: #16304b;
+    --emergency: #f2857c;
+    --emergency-soft: #3a1c1a;
+    --advisory: #f0b453;
+    --advisory-soft: #3a2b12;
+    --info: #7db3ee;
+    --info-soft: #1a2c42;
+    --ok: #6fd19a;
+    --ok-soft: #173325;
+  }
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-contrast: var(--brand-contrast);
+  --color-header: var(--header);
+  --color-emergency: var(--emergency);
+  --color-emergency-soft: var(--emergency-soft);
+  --color-advisory: var(--advisory);
+  --color-advisory-soft: var(--advisory-soft);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
+  --font-sans: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+}
+
+:focus-visible {
+  outline: 3px solid #2f7ae5;
+  outline-offset: 2px;
+}
+
+/* Rich-text alert bodies, in the reader and the editor. */
+.prose-alert {
+  overflow-wrap: anywhere;
+  line-height: 1.6;
+}
+.prose-alert > * + * {
+  margin-top: 0.6em;
+}
+.prose-alert a {
+  color: var(--brand);
+  text-decoration: underline;
+}
+.prose-alert strong,
+.prose-alert b {
+  font-weight: 700;
+}
+.prose-alert ul {
+  list-style: disc;
+  padding-left: 1.4em;
+}
+.prose-alert ol {
+  list-style: decimal;
+  padding-left: 1.4em;
+}
+.prose-alert h2 {
+  font-size: 1.2em;
+  font-weight: 700;
+}
+.prose-alert h3 {
+  font-size: 1.05em;
+  font-weight: 700;
+}
+.prose-alert blockquote {
+  border-left: 3px solid var(--border);
+  padding-left: 0.8em;
+  color: var(--muted);
+}
+.prose-alert img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+}
+.prose-alert img.ProseMirror-selectednode {
+  outline: 3px solid #2f7ae5;
+}
+.tiptap:focus {
+  outline: none;
+}
+.tiptap p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: var(--muted);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}

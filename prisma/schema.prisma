@@ -1,0 +1,141 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  PUBLISHER
+  ADMIN
+}
+
+enum Severity {
+  INFO
+  ADVISORY
+  EMERGENCY
+}
+
+enum AlertStatus {
+  DRAFT
+  PENDING
+  PUBLISHED
+  REJECTED
+  ARCHIVED
+}
+
+enum DispatchStatus {
+  QUEUED
+  SENDING
+  SENT
+  FAILED
+}
+
+/// Town staff who write or approve alerts. Residents do not have accounts.
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  department   String
+  role         Role     @default(PUBLISHER)
+  passwordHash String
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  alerts   Alert[]      @relation("AlertAuthor")
+  reviews  Alert[]      @relation("AlertReviewer")
+  images   Image[]
+  auditLog AuditEntry[]
+}
+
+model Category {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+
+  alerts      Alert[]
+  subscribers Subscriber[]
+}
+
+model Alert {
+  id          String      @id @default(cuid())
+  title       String      @db.VarChar(120)
+  /// Sanitized rich-text HTML (see src/lib/sanitize.ts).
+  bodyHtml    String
+  severity    Severity    @default(INFO)
+  status      AlertStatus @default(DRAFT)
+  reviewNote  String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  publishedAt DateTime?
+  expiresAt   DateTime?
+
+  categoryId   String
+  category     Category @relation(fields: [categoryId], references: [id])
+  authorId     String
+  author       User     @relation("AlertAuthor", fields: [authorId], references: [id])
+  reviewedById String?
+  reviewedBy   User?    @relation("AlertReviewer", fields: [reviewedById], references: [id])
+
+  dispatches Dispatch[]
+
+  @@index([status, publishedAt])
+  @@index([authorId, updatedAt])
+}
+
+/// A resident's notification preferences, keyed by email or phone.
+model Subscriber {
+  id               String     @id @default(cuid())
+  email            String?    @unique
+  phone            String?    @unique
+  viaEmail         Boolean    @default(false)
+  viaSms           Boolean    @default(false)
+  emergencyOnly    Boolean    @default(false)
+  /// Secret for the one-click unsubscribe link.
+  unsubscribeToken String     @unique @default(cuid())
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+  categories       Category[]
+}
+
+/// Outbox row created when an alert is published. A background worker picks these
+/// up and fans the alert out to subscribers in batches, so publishing never waits
+/// on thousands of emails or texts being sent.
+model Dispatch {
+  id             String         @id @default(cuid())
+  alertId        String
+  alert          Alert          @relation(fields: [alertId], references: [id], onDelete: Cascade)
+  status         DispatchStatus @default(QUEUED)
+  recipientCount Int            @default(0)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  @@index([status, createdAt])
+}
+
+/// Photos inserted into alerts. Stored in Postgres for the prototype; move to
+/// object storage (e.g. Vercel Blob or S3) before production.
+model Image {
+  id           String   @id @default(cuid())
+  mimeType     String
+  size         Int
+  data         Bytes
+  createdAt    DateTime @default(now())
+  uploadedById String
+  uploadedBy   User     @relation(fields: [uploadedById], references: [id])
+}
+
+model AuditEntry {
+  id      String   @id @default(cuid())
+  at      DateTime @default(now())
+  actorId String?
+  actor   User?    @relation(fields: [actorId], references: [id])
+  /// Display name at the time of the action ("Resident" for public actions).
+  actorLabel String
+  action  String
+  detail  String
+
+  @@index([at])
+}

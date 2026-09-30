@@ -1,7 +1,27 @@
+# dependencies
 node_modules/
-dist/
+
+# Next.js / build output
+.next/
+out/
 build/
+dist/
 coverage/
+*.tsbuildinfo
+next-env.d.ts
+
+# generated Prisma client
+src/generated/
+
+# env files (never commit secrets; .env.example is the template)
 .env
 .env.*
+!.env.example
+
+# Vercel
+.vercel
+
+# misc
 .DS_Store
+*.pem
+npm-debug.log*

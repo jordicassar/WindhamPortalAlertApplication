@@ -20,3 +20,41 @@ jobs:
       - run: npm ci
 
       - run: npm run format:check
+
+  build:
+    name: Lint, type-check and build
+    runs-on: ubuntu-latest
+    # The build prerenders the public pages, so it needs a database to read from.
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: windham_portal
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U ci" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://ci:ci@localhost:5432/windham_portal
+      SESSION_SECRET: ci-only-secret-that-is-at-least-32-characters
+      SEED_STAFF_PASSWORD: ci-only-password
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run lint
+
+      - run: npm run typecheck
+
+      - run: npx prisma migrate deploy
+
+      - run: npx prisma db seed
+
+      - run: npm run build
