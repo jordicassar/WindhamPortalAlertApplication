@@ -1,5 +1,11 @@
 # Windham Community Notification Portal
 
+[![CI on main](https://github.com/jordicassar/WindhamPortalAlertApplication/actions/workflows/ci.yml/badge.svg?branch=main&event=push)](https://github.com/jordicassar/WindhamPortalAlertApplication/actions/workflows/ci.yml?query=branch%3Amain+event%3Apush)
+[![CI on latest pull request](https://github.com/jordicassar/WindhamPortalAlertApplication/actions/workflows/ci.yml/badge.svg?event=pull_request)](https://github.com/jordicassar/WindhamPortalAlertApplication/actions/workflows/ci.yml?query=event%3Apull_request)
+
+The first badge shows whether `main` is healthy; the second shows the checks on the most recently
+updated pull request. Click either one to see the individual runs.
+
 Town alerts for Windham residents: emergency notices, closures and community news, written by
 town staff, approved by an administrator, and published to the public site and subscribers.
 
