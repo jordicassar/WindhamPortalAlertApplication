@@ -5,6 +5,9 @@ town staff, approved by an administrator, and published to the public site and s
 
 **Status:** prototype for the sandbox environment (December 2026 milestone).
 
+**Live sandbox:** https://windhamportalalertapplication-jordicassars-projects.vercel.app
+(requires sign-in to the Vercel team; see [Deploying](#deploying-sandbox))
+
 ## What it does
 
 | Who                                | Can                                                                                                                                                   |
@@ -51,11 +54,11 @@ Useful scripts: `npm run lint`, `npm run typecheck`, `npm run format`, `npm run 
 
 **Live sandbox:** https://windhamportalalertapplication-jordicassars-projects.vercel.app
 
-| Piece    | Where                                                                                   |
-| -------- | --------------------------------------------------------------------------------------- |
-| Hosting  | Vercel project `windham_portal_alert_application` (team `jordicassars-projects`)        |
-| Database | Neon Postgres `windham-portal-db` (free plan, `iad1`), added via the Vercel Marketplace |
-| Source   | GitHub `jordicassar/WindhamPortalAlertApplication`, connected to the Vercel project     |
+| Piece    | Where                                                                                                                                                                                                      |
+| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Hosting  | Vercel project [`windham_portal_alert_application`](https://vercel.com/jordicassars-projects/windham_portal_alert_application) (team `jordicassars-projects`)                                              |
+| Database | Neon Postgres [`windham-portal-db`](https://vercel.com/d/dashboard/integrations/neon/icfg_oJkNMdaN3SPpTrUh8L6yhOA2/resources/store_sSeUS6j5QOszj9GE) (free plan, `iad1`), added via the Vercel Marketplace |
+| Source   | GitHub [`jordicassar/WindhamPortalAlertApplication`](https://github.com/jordicassar/WindhamPortalAlertApplication), connected to the Vercel project                                                        |
 
 The sandbox is behind **Vercel Authentication** (Settings → Deployment Protection), so only
 people signed in to the Vercel team can open it. Turn that off to share it more widely.
