@@ -2,6 +2,7 @@
 
 import { useActionState } from 'react';
 import { login } from '@/app/actions/auth';
+import { HoneypotField } from '@/components/honeypot-field';
 import { SubmitButton } from '@/components/submit-button';
 import { card, input, label, Notice } from '@/components/ui';
 
@@ -23,6 +24,7 @@ export function LoginForm() {
           className={input}
         />
       </label>
+      <HoneypotField />
       {state.error && <Notice kind="error">{state.error}</Notice>}
       <SubmitButton pendingText="Signing in…" className="w-full py-3 text-lg">
         Sign in
