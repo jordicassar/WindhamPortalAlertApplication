@@ -1,16 +1,34 @@
 'use server';
 
 import { redirect } from 'next/navigation';
+import { isHoneypotFilled } from '@/components/honeypot-field';
 import { logAudit } from '@/lib/audit';
 import { db } from '@/lib/db';
+import { clientIp, LIMITS, rateLimit, retryMessage } from '@/lib/rate-limit';
+import { verifyTurnstile } from '@/lib/turnstile';
 import { firstError, subscribeSchema, type ActionState } from '@/lib/validation';
 
 export type SubscribeState = ActionState & { unsubscribeToken?: string };
+
+const HUMAN_CHECK_FAILED =
+  "We couldn't confirm you're not a robot. Please complete the check above the Subscribe button and try again.";
 
 export async function subscribe(
   _prev: SubscribeState,
   formData: FormData,
 ): Promise<SubscribeState> {
+  // Bot defences, cheapest first. A filled honeypot gets a normal-looking reply so
+  // the bot has no signal that it was caught; nothing is saved.
+  if (isHoneypotFilled(formData)) return { message: "You're subscribed to Windham alerts." };
+
+  const ip = await clientIp();
+  const ipLimit = await rateLimit('subscribe-ip', ip, LIMITS.subscribeIp);
+  if (!ipLimit.ok) return { error: retryMessage(ipLimit.retryAfterSeconds) };
+
+  if (!(await verifyTurnstile(formData.get('cf-turnstile-response'), ip))) {
+    return { error: HUMAN_CHECK_FAILED };
+  }
+
   const parsed = subscribeSchema.safeParse({
     email: formData.get('email') ?? undefined,
     phone: formData.get('phone') ?? undefined,
@@ -24,6 +42,14 @@ export async function subscribe(
 
   const email = s.viaEmail ? s.email : undefined;
   const phone = s.viaSms ? s.phone : undefined;
+
+  // Stop anyone repeatedly changing one person's subscription, even from many IPs.
+  for (const contact of [email, phone]) {
+    if (!contact) continue;
+    const contactLimit = await rateLimit('subscribe-contact', contact, LIMITS.subscribeContact);
+    if (!contactLimit.ok) return { error: retryMessage(contactLimit.retryAfterSeconds) };
+  }
+
   const data = {
     email: email ?? null,
     phone: phone ?? null,
