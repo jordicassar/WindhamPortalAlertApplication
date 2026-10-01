@@ -11,8 +11,8 @@ town staff, approved by an administrator, and published to the public site and s
 
 **Status:** prototype for the sandbox environment (December 2026 milestone).
 
-**Live sandbox:** https://windhamportalalertapplication-jordicassars-projects.vercel.app
-(requires sign-in to the Vercel team; see [Deploying](#deploying-sandbox))
+**Production:** [windhamportalalertapplication.vercel.app](https://windhamportalalertapplication.vercel.app)
+(public, deployed from `main`; see [Deploying](#deploying-sandbox))
 
 ## What it does
 
@@ -58,7 +58,7 @@ Useful scripts: `npm run lint`, `npm run typecheck`, `npm run format`, `npm run 
 
 ## Deploying (sandbox)
 
-**Live sandbox:** https://windhamportalalertapplication-jordicassars-projects.vercel.app
+**Production:** [windhamportalalertapplication.vercel.app](https://windhamportalalertapplication.vercel.app)
 
 | Piece    | Where                                                                                                                                                                                                      |
 | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -66,8 +66,10 @@ Useful scripts: `npm run lint`, `npm run typecheck`, `npm run format`, `npm run 
 | Database | Neon Postgres [`windham-portal-db`](https://vercel.com/d/dashboard/integrations/neon/icfg_oJkNMdaN3SPpTrUh8L6yhOA2/resources/store_sSeUS6j5QOszj9GE) (free plan, `iad1`), added via the Vercel Marketplace |
 | Source   | GitHub [`jordicassar/WindhamPortalAlertApplication`](https://github.com/jordicassar/WindhamPortalAlertApplication), connected to the Vercel project                                                        |
 
-The sandbox is behind **Vercel Authentication** (Settings → Deployment Protection), so only
-people signed in to the Vercel team can open it. Turn that off to share it more widely.
+The production address above is **public**: anyone with the link can open it. Preview URLs and
+per-deployment URLs (the ones ending in `-jordicassars-projects.vercel.app`) are behind **Vercel
+Authentication** (Settings → Deployment Protection), so only people signed in to the Vercel team
+can open those.
 
 ### How a deploy works
 
