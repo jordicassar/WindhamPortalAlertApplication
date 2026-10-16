@@ -3,7 +3,9 @@
 import Link from 'next/link';
 import { useActionState, useState } from 'react';
 import { subscribe, type SubscribeState } from '@/app/actions/subscribe';
+import { HoneypotField } from './honeypot-field';
 import { BellIcon, MailIcon, PhoneIcon } from './icons';
+import { TurnstileWidget } from './turnstile-widget';
 import { SubmitButton } from './submit-button';
 import { card, checkbox, cx, input, label, Notice } from './ui';
 
@@ -129,6 +131,9 @@ export function SubscribeForm({ categories }: { categories: { id: string; name: 
             ))}
           </div>
         </fieldset>
+
+        <HoneypotField />
+        <TurnstileWidget action="subscribe" resetSignal={state} />
 
         {state.error && <Notice kind="error">{state.error}</Notice>}
         {state.message && (

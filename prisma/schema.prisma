@@ -127,6 +127,17 @@ model Image {
   uploadedBy   User     @relation(fields: [uploadedById], references: [id])
 }
 
+/// Fixed-window request counters for rate limiting (see src/lib/rate-limit.ts).
+/// Stored in Postgres so every server instance shares the same counts.
+model RateLimit {
+  /// "<bucket>:<hashed identifier>", e.g. "subscribe-ip:3f9a…". No raw IPs or emails are stored.
+  key     String   @id
+  count   Int
+  resetAt DateTime
+
+  @@index([resetAt])
+}
+
 model AuditEntry {
   id      String   @id @default(cuid())
   at      DateTime @default(now())

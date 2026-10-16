@@ -1,0 +1,53 @@
+# Dependabot keeps dependencies up to date by opening pull requests.
+# Each PR runs CI and needs a code-owner review before it can merge, like any other change.
+# Docs: https://docs.github.com/code-security/dependabot/working-with-dependabot/dependabot-options-reference
+
+version: 2
+updates:
+  # npm packages (package.json / package-lock.json)
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: America/New_York
+    open-pull-requests-limit: 5
+    labels: [dependencies]
+    commit-message:
+      prefix: 'deps'
+      prefix-development: 'deps-dev'
+    # A package goes into the FIRST group it matches, so order matters.
+    groups:
+      # Packages that must move in lockstep (all versions, including majors); a version
+      # mismatch between them breaks the build. Listed first so they're never split up.
+      prisma:
+        patterns: ['prisma', '@prisma/*']
+      tiptap:
+        patterns: ['@tiptap/*']
+      next:
+        patterns: ['next', 'eslint-config-next']
+      react:
+        patterns: ['react', 'react-dom', '@types/react', '@types/react-dom']
+      # Everything else: minor and patch updates bundled into one PR per type.
+      production:
+        dependency-type: production
+        update-types: [minor, patch]
+      development:
+        dependency-type: development
+        update-types: [minor, patch]
+    # Major versions arrive as separate PRs (one per package or group) since they can include
+    # breaking changes. Security fixes are opened regardless of this schedule.
+
+  # GitHub Actions used in .github/workflows
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+      timezone: America/New_York
+    labels: [dependencies, ci]
+    commit-message:
+      prefix: 'ci'
+    groups:
+      actions:
+        patterns: ['*']
