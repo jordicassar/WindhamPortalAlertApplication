@@ -12,7 +12,7 @@ town staff, approved by an administrator, and published to the public site and s
 **Status:** prototype for the sandbox environment (December 2026 milestone).
 
 **Production:** [windhamportalalertapplication.vercel.app](https://windhamportalalertapplication.vercel.app)
-(public, deployed from `main`; see [Deploying](#deploying-sandbox))
+(public, deployed from `release`; see [Environments and releases](#environments-and-releases))
 
 ## What it does
 
@@ -46,6 +46,11 @@ npm run db:seed             # sample categories, staff accounts and alerts
 npm run dev                 # http://localhost:3000
 ```
 
+Instead of a local Postgres you can use the shared **development** database on Neon, if you have
+access to the owner's Vercel account (free plan): run `vercel link`, then
+`vercel env pull .env --environment=development --yes`, and skip `db:migrate` and `db:seed`.
+`.env.example` describes both options. Never point a local `.env` at production.
+
 Demo staff accounts (password is your `SEED_STAFF_PASSWORD`):
 
 | Email                         | Role      |
@@ -56,9 +61,41 @@ Demo staff accounts (password is your `SEED_STAFF_PASSWORD`):
 
 Useful scripts: `npm run lint`, `npm run typecheck`, `npm run format`, `npm run build`.
 
-## Deploying (sandbox)
+## Environments and releases
 
-**Production:** [windhamportalalertapplication.vercel.app](https://windhamportalalertapplication.vercel.app)
+Changes are tested before residents see them. Each environment has its own Neon database branch,
+so pull request previews never touch production data.
+
+| Environment     | Used for                                        | Code             | Database (Neon branch) | URL                                                                                          |
+| --------------- | ----------------------------------------------- | ---------------- | ---------------------- | -------------------------------------------------------------------------------------------- |
+| **Development** | Local work and every pull request preview       | feature branches | `development`          | `localhost:3000` and each pull request's preview link                                        |
+| **Staging**     | Requirements group testing and acceptance (UAT) | `main`           | `staging`              | stable staging domain on Vercel (to be added, e.g. `windham-alerts-staging.vercel.app`)      |
+| **Production**  | Residents                                       | `release`        | `main`                 | [windhamportalalertapplication.vercel.app](https://windhamportalalertapplication.vercel.app) |
+
+### Release flow
+
+1. **Feature branch → pull request into `main`.** CI runs, and Vercel builds a preview that uses
+   the development database. Review the change on the preview link.
+2. **Merge into `main`.** Vercel deploys it to staging, with the staging database. Test it there,
+   and have the Requirements group check it if needed.
+3. **Promote: pull request from `main` into `release`.** Title it e.g. `Release 2026-10-15` and
+   list what's included. Once CI passes and it is merged, Vercel deploys `release` to production.
+   Production data is never reset or seeded.
+
+Never commit straight to `release`, and never merge a feature branch into it: everything reaches
+production through `main`, so production only ever runs code that was on staging first.
+
+**If a release breaks production,** use **Instant Rollback** in Vercel (project → Deployments →
+⋯ on the last good production deployment), then fix forward through `main` as usual.
+
+### Who can promote `main` → `release`
+
+`main` and `release` are both protected: changes only arrive by pull request, CI must pass, and
+the branches can't be force-pushed or deleted. Any collaborator with write access can open the
+`main` → `release` pull request. The repository owner (@jordicassar) merges it, after the change
+has been checked on staging; they can name other people to do this.
+
+## Deploying
 
 | Piece    | Where                                                                                                                                                                                                      |
 | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -73,47 +110,53 @@ can open those.
 
 ### How a deploy works
 
-Pushes to `main` deploy to production, and every pull request gets its own preview URL. Vercel
-runs `npm run vercel-build`, which:
+Pushes to `release` deploy to production, pushes to `main` deploy to staging, and every pull
+request gets its own preview URL. Vercel runs `npm run vercel-build`, which:
 
 1. generates the Prisma client,
-2. applies any pending migrations to Neon (`prisma migrate deploy`), and
+2. applies any pending migrations to that environment's Neon database (`prisma migrate deploy`),
+   and
 3. runs `next build`, which prerenders the residents' page from the database.
 
-If the build fails, the previous deployment stays live. To deploy without a push, run
-`vercel --prod` from a linked checkout (`vercel link`), or use **Redeploy** in the dashboard on a
-deployment of the latest commit.
-
-Preview builds use the Preview environment variables. If **preview branching** is enabled on the
-Neon resource, each preview gets its own copy of the database; otherwise a pull request's
-migration is applied to the shared sandbox database when its preview builds.
+If the build fails, the previous deployment stays live. A migration in a pull request is first
+applied to the development database (preview), then staging (merge to `main`), and only reaches
+production when it is released.
 
 ### Environment variables
 
-| Variable                | Value                                                                   |
-| ----------------------- | ----------------------------------------------------------------------- |
-| `DATABASE_URL`          | Set by the Neon integration: **pooled** connection (host has `-pooler`) |
-| `DATABASE_URL_UNPOOLED` | Set by the Neon integration: direct connection, used by migrations      |
-| `SESSION_SECRET`        | Random 32+ character string: `openssl rand -base64 32`                  |
-| `SEED_STAFF_PASSWORD`   | Password for the demo staff accounts; share it privately with the team  |
+Each environment has its own values in Vercel:
 
+| Variable                | Value                                                                                             |
+| ----------------------- | ------------------------------------------------------------------------------------------------- |
+| `DATABASE_URL`          | **Pooled** connection (host has `-pooler`) to that environment's Neon branch                      |
+| `DATABASE_URL_UNPOOLED` | Direct connection to the same branch, used by migrations                                          |
+| `SESSION_SECRET`        | Random 32+ character string, different per environment: `openssl rand -base64 32`                 |
+| `SEED_STAFF_PASSWORD`   | Password for the demo staff accounts in development and staging; share it privately with the team |
+
+Production's database variables come from the Neon integration. Development and all preview
+branches use the `development` branch; previews of `main` (staging) use the `staging` branch.
 The Neon integration also adds `POSTGRES_*`, `PG*` and `NEON_PROJECT_ID`; the app doesn't use
 them.
 
-### Seeding the sandbox (once)
+### Seeding development and staging
 
-Deploys create the tables but not the demo data. Seed from your machine with the production
-variables; the seed is safe to re-run and only adds what's missing:
+Deploys create the tables but not the demo data. Seed development and staging from your machine
+with their direct connection strings (kept in `.env.environments`, which git ignores; ask the
+owner for them). The seed is safe to re-run and only adds what's missing:
 
 ```bash
-vercel env pull /tmp/windham-prod.env --environment=production --yes
-(set -a; . /tmp/windham-prod.env; set +a; DATABASE_URL="$DATABASE_URL_UNPOOLED" npx prisma db seed)
-rm -f /tmp/windham-prod.env
+(set -a; . ./.env.environments; set +a
+ for url in "$DEV_DATABASE_URL_UNPOOLED" "$STAGING_DATABASE_URL_UNPOOLED"; do
+   DIRECT_URL="$url" DATABASE_URL="$url" npx prisma migrate deploy &&
+   DIRECT_URL="$url" DATABASE_URL="$url" npx prisma db seed
+ done)
 ```
 
-The residents' page picks up the new data within a minute; no redeploy is needed. Don't pull
-production variables into `.env.local`: Next.js would load them for `npm run dev` ahead of your
-local `.env`.
+Setting `DIRECT_URL` matters: it takes precedence over anything in your local `.env`.
+
+**Never seed production.** It holds real alerts and staff accounts; the demo accounts and their
+shared password must not exist there. Don't pull production variables into `.env` or
+`.env.local`.
 
 ## Built to handle traffic spikes
 
