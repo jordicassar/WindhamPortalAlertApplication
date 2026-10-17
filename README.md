@@ -69,7 +69,7 @@ so pull request previews never touch production data.
 | Environment     | Used for                                        | Code             | Database (Neon branch) | URL                                                                                          |
 | --------------- | ----------------------------------------------- | ---------------- | ---------------------- | -------------------------------------------------------------------------------------------- |
 | **Development** | Local work and every pull request preview       | feature branches | `development`          | `localhost:3000` and each pull request's preview link                                        |
-| **Staging**     | Requirements group testing and acceptance (UAT) | `main`           | `staging`              | stable staging domain on Vercel (to be added, e.g. `windham-alerts-staging.vercel.app`)      |
+| **Staging**     | Requirements group testing and acceptance (UAT) | `main`           | `staging`              | [windham-alerts-staging.vercel.app](https://windham-alerts-staging.vercel.app)               |
 | **Production**  | Residents                                       | `release`        | `main`                 | [windhamportalalertapplication.vercel.app](https://windhamportalalertapplication.vercel.app) |
 
 ### Release flow
@@ -103,10 +103,15 @@ has been checked on staging; they can name other people to do this.
 | Database | Neon Postgres [`windham-portal-db`](https://vercel.com/d/dashboard/integrations/neon/icfg_oJkNMdaN3SPpTrUh8L6yhOA2/resources/store_sSeUS6j5QOszj9GE) (free plan, `iad1`), added via the Vercel Marketplace |
 | Source   | GitHub [`jordicassar/WindhamPortalAlertApplication`](https://github.com/jordicassar/WindhamPortalAlertApplication), connected to the Vercel project                                                        |
 
-The production address above is **public**: anyone with the link can open it. Preview URLs and
-per-deployment URLs (the ones ending in `-jordicassars-projects.vercel.app`) are behind **Vercel
-Authentication** (Settings → Deployment Protection), so only people signed in to the Vercel team
-can open those.
+The production address above is **public**: anyone with the link can open it. Staging, pull
+request previews and per-deployment URLs (the ones ending in `-jordicassars-projects.vercel.app`)
+are behind **Vercel Authentication** (Settings → Deployment Protection). The project is on Vercel's
+free Hobby plan, which has no team members, so only the owner's Vercel login can open them. To let
+collaborators and the Requirements group in, either turn Vercel Authentication off or move to the
+Pro plan and invite them.
+
+The staging address always shows the latest build of `main`; it is attached to that branch under
+Settings → Domains.
 
 ### How a deploy works
 
