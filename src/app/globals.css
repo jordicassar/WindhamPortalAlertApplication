@@ -6,26 +6,29 @@
  * text clear AAA (7:1) on cards, and the base size is 17px (see html below).
  */
 :root {
-  --bg: #f3f6fa;
+  --bg: #ffffff;
   --surface: #ffffff;
-  --surface-2: #edf1f6;
+  --surface-2: #f2f4f7;
   --text: #121c2b;
   --muted: #4a5668;
-  --border: #d3dbe5;
-  --brand: #1a4f86;
-  --brand-hover: #133d69;
+  --border: #d9dde4;
+  /* Town of Windham palette (windhamct.gov): navy #1C3664, maroon #902828, white. */
+  --brand: #1c3664;
+  --brand-hover: #142849;
   --brand-contrast: #ffffff;
-  --brand-soft: #e5eef9;
-  --header: #0e2b4b;
-  --hero-from: #0e2b4b;
-  --hero-to: #1d5c96;
+  --brand-soft: #e8ecf3;
+  --accent: #902828;
+  --accent-soft: #f6e9e9;
+  --header: #1c3664;
+  --hero-from: #1c3664;
+  --hero-to: #2a4c86;
   --emergency: #b42318;
   --emergency-strong: #b42318;
   --emergency-soft: #fdeceb;
   --advisory: #8f4f06;
   --advisory-soft: #fff3de;
-  --info: #1b5eab;
-  --info-soft: #e6f0fb;
+  --info: #1c3664;
+  --info-soft: #e8ecf3;
   --ok: #067647;
   --ok-soft: #e1f5ea;
   --ring: #2f7ae5;
@@ -41,13 +44,15 @@
     --text: #edf1f7;
     --muted: #a9b5c4;
     --border: #2b3747;
-    --brand: #7db4f0;
-    --brand-hover: #9fc8f6;
-    --brand-contrast: #0a1420;
-    --brand-soft: #16283d;
-    --header: #0a1a2c;
-    --hero-from: #0a1a2c;
-    --hero-to: #143a60;
+    --brand: #a9bde0;
+    --brand-hover: #c4d3ec;
+    --brand-contrast: #0e1a30;
+    --brand-soft: #1a2a45;
+    --accent: #e39a9a;
+    --accent-soft: #3a1a1a;
+    --header: #142849;
+    --hero-from: #142849;
+    --hero-to: #1c3664;
     --emergency: #ff8f85;
     --emergency-strong: #a3231a;
     --emergency-soft: #3a1714;
@@ -74,6 +79,9 @@
   --color-brand-hover: var(--brand-hover);
   --color-brand-contrast: var(--brand-contrast);
   --color-brand-soft: var(--brand-soft);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-maroon: #902828;
   --color-header: var(--header);
   --color-emergency: var(--emergency);
   --color-emergency-strong: var(--emergency-strong);

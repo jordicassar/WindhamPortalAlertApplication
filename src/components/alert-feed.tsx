@@ -74,7 +74,10 @@ export function AlertFeed({
     <section aria-labelledby="feed-heading">
       <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h2 id="feed-heading" className="text-2xl font-bold tracking-tight sm:text-3xl">
+          <h2
+            id="feed-heading"
+            className="text-2xl font-bold tracking-tight text-accent sm:text-3xl"
+          >
             Community alerts
           </h2>
           <p className="mt-1 text-muted">Tap an alert to read the full notice.</p>
