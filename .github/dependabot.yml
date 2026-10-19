@@ -38,6 +38,15 @@ updates:
         update-types: [minor, patch]
     # Major versions arrive as separate PRs (one per package or group) since they can include
     # breaking changes. Security fixes are opened regardless of this schedule.
+    ignore:
+      # TypeScript 7 isn't supported by typescript-eslint (used by eslint-config-next) yet.
+      # Remove this once eslint-config-next supports it, so the upgrade can be proposed again.
+      - dependency-name: 'typescript'
+        update-types: ['version-update:semver-major']
+      # The app runs on Node.js 22 (package.json "engines", CI and Vercel), so its type
+      # definitions must stay on 22.x. Remove when the project moves to a newer Node.js.
+      - dependency-name: '@types/node'
+        update-types: ['version-update:semver-major']
 
   # GitHub Actions used in .github/workflows
   - package-ecosystem: github-actions
