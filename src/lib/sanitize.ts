@@ -52,15 +52,29 @@ export function sanitizeAlertHtml(dirty: string): string {
 
 /** Plain-text version of an alert body, for previews, search and SMS. */
 export function alertHtmlToText(html: string): string {
-  return sanitize(html.replace(/<\/(p|li|h2|h3|blockquote)>|<br\s*\/?>/gi, ' $&'), {
-    allowedTags: [],
-    allowedAttributes: {},
-  })
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
+  return decodeEntities(
+    sanitize(html.replace(/<\/(p|li|h2|h3|blockquote)>|<br\s*\/?>/gi, ' $&'), {
+      allowedTags: [],
+      allowedAttributes: {},
+    }),
+  )
     .replace(/\s+/g, ' ')
     .trim();
+}
+
+const ENTITIES: Record<string, string> = {
+  '&amp;': '&',
+  '&lt;': '<',
+  '&gt;': '>',
+  '&quot;': '"',
+  '&#39;': "'",
+};
+
+/**
+ * Decode the entities sanitize-html emits, in a single pass. Decoding one entity at a time
+ * would decode twice: text containing a literal "&lt;" is escaped to "&amp;lt;", and
+ * replacing "&amp;" first would turn that back into "&lt;" and then into "<".
+ */
+function decodeEntities(text: string): string {
+  return text.replace(/&(?:amp|lt|gt|quot|#39);/g, (entity) => ENTITIES[entity]);
 }
