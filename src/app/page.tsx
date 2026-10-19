@@ -30,7 +30,7 @@ export default async function HomePage() {
             <StatusPill emergencies={emergencies.length} active={live.length} />
             <a
               href="#subscribe"
-              className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-white px-5 py-2.5 text-base font-semibold text-[#0e2b4b] shadow-md transition-colors hover:bg-[#e5eef9]"
+              className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-white px-5 py-2.5 text-base font-semibold text-[#1c3664] shadow-md transition-colors hover:bg-[#e8ecf3]"
             >
               <BellIcon className="size-5" />
               Get alerts by email or text

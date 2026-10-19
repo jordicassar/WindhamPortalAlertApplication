@@ -1,23 +1,27 @@
+import Image from 'next/image';
 import Link from 'next/link';
 import { Suspense } from 'react';
 import { logout } from '@/app/actions/auth';
 import { getCurrentUser } from '@/lib/dal';
-import { BellIcon, UserIcon } from './icons';
+import { UserIcon } from './icons';
 
 const navLink =
   'inline-flex min-h-11 items-center gap-2 rounded-xl px-4 text-base font-semibold text-white/90 transition-colors hover:bg-white/15 hover:text-white';
 
 export function SiteHeader() {
   return (
-    <header className="border-b border-white/10 bg-header text-white">
+    <header className="border-b-4 border-maroon bg-header text-white">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
         <Link href="/" className="flex items-center gap-3 rounded-xl">
-          <span
-            aria-hidden
-            className="grid size-11 place-items-center rounded-xl bg-gradient-to-br from-white to-[#cfe0f5] text-[#0e2b4b] shadow-md"
-          >
-            <BellIcon className="size-6" />
-          </span>
+          {/* Decorative: the link text next to it already says "Windham Community Notifications". */}
+          <Image
+            src="/images/windham-logo.png"
+            alt=""
+            width={52}
+            height={52}
+            preload
+            className="size-12 shrink-0 rounded-full shadow-md sm:size-13"
+          />
           <span>
             <span className="block text-lg font-bold leading-tight sm:text-xl">Windham</span>
             <span className="block text-sm leading-tight text-white/80">
