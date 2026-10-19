@@ -5,7 +5,25 @@ on:
     branches: [main, release]
   pull_request:
 
+# Read-only by default; no job here needs to write to the repository.
+permissions:
+  contents: read
+
 jobs:
+  dependency-review:
+    name: Dependency review
+    # Compares the PR's package changes against the base branch, so it only runs on PRs.
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      # Blocks a PR that adds or upgrades to a package with a known vulnerability of
+      # moderate severity or higher.
+      - uses: actions/dependency-review-action@v5
+        with:
+          fail-on-severity: moderate
+
   format:
     name: Check formatting
     runs-on: ubuntu-latest
@@ -54,6 +72,12 @@ jobs:
       - run: npm run typecheck
 
       - run: npx prisma migrate deploy
+
+      # After applying every migration, the database must match schema.prisma exactly.
+      # A difference means the schema was changed without creating a migration
+      # (`npm run db:migrate`), which would otherwise only surface as a broken deploy.
+      - name: Check migrations match the schema
+        run: npx prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma --exit-code
 
       - run: npx prisma db seed
 
