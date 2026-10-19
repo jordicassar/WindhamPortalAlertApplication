@@ -116,12 +116,14 @@ request route unless it's an emergency.
 | Database | Neon Postgres [`windham-portal-db`](https://vercel.com/d/dashboard/integrations/neon/icfg_oJkNMdaN3SPpTrUh8L6yhOA2/resources/store_sSeUS6j5QOszj9GE) (free plan, `iad1`), added via the Vercel Marketplace |
 | Source   | GitHub [`jordicassar/WindhamPortalAlertApplication`](https://github.com/jordicassar/WindhamPortalAlertApplication), connected to the Vercel project                                                        |
 
-The production address above is **public**: anyone with the link can open it. Staging, pull
-request previews and per-deployment URLs (the ones ending in `-jordicassars-projects.vercel.app`)
-are behind **Vercel Authentication** (Settings → Deployment Protection). The project is on Vercel's
-free Hobby plan, which has no team members, so only the owner's Vercel login can open them. To let
-collaborators and the Requirements group in, either turn Vercel Authentication off or move to the
-Pro plan and invite them.
+All addresses are **public**: anyone with the link can open production, staging and pull request
+previews (Vercel Authentication is turned off under Settings → Deployment Protection), so
+developers, the Requirements group and stakeholders can review changes without a Vercel account.
+Staging and previews only hold test and demo data, staff pages still need a portal login, and
+every non-production build sends `X-Robots-Tag: noindex` so search engines only list production.
+
+Before real residents' data could reach staging (for example, refreshing the `staging` database
+from production), turn Vercel Authentication back on or move to the Pro plan with invited members.
 
 The staging address always shows the latest build of `main`; it is attached to that branch under
 Settings → Domains.
