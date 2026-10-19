@@ -59,7 +59,11 @@ Demo staff accounts (password is your `SEED_STAFF_PASSWORD`):
 | `boe@windham.example`         | Publisher |
 | `publicworks@windham.example` | Publisher |
 
-Useful scripts: `npm run lint`, `npm run typecheck`, `npm run format`, `npm run build`.
+Useful scripts: `npm run lint`, `npm run typecheck`, `npm run format`, `npm run build`,
+`npm test` (unit tests, also run in CI) and `npm run test:watch` (re-runs tests as you edit).
+
+Tests live next to the code they cover, named `*.test.ts` (e.g. `src/lib/sanitize.test.ts`), and
+run with [Vitest](https://vitest.dev).
 
 ## Environments and releases
 
