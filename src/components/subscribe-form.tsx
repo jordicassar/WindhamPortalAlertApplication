@@ -32,7 +32,7 @@ export function SubscribeForm({ categories }: { categories: { id: string; name: 
           <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-brand text-brand-contrast">
             <BellIcon className="size-6" />
           </span>
-          <h2 id="sub-heading" className="text-2xl font-bold tracking-tight">
+          <h2 id="sub-heading" className="text-2xl font-bold tracking-tight text-accent">
             Get notified
           </h2>
         </div>
