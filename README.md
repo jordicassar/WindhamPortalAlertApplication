@@ -94,10 +94,19 @@ production through `main`, so production only ever runs code that was on staging
 
 ### Who can promote `main` → `release`
 
-`main` and `release` are both protected: changes only arrive by pull request, CI must pass, and
-the branches can't be force-pushed or deleted. Any collaborator with write access can open the
-`main` → `release` pull request. The repository owner (@jordicassar) merges it, after the change
-has been checked on staging; they can name other people to do this.
+Both branches are protected: they can't be force-pushed or deleted, and pull requests need the
+code owner's approval plus passing checks (**Check formatting**, **Lint, type-check and build**
+with unit tests and the migration check, and **Dependency review**).
+
+- **`main`:** everyone works through pull requests, which are **squash-merged** (one commit per
+  pull request).
+- **`release`:** only the repository owner (@jordicassar) can change it, by merging the
+  `main` → `release` pull request (with a **merge commit**, so `release` stays in step with
+  `main`) or, for urgent fixes, by pushing directly. Any collaborator can _open_ the
+  `main` → `release` pull request; only the owner can merge it.
+
+A direct push to `release` deploys straight to production without CI or review, so use the pull
+request route unless it's an emergency.
 
 ## Deploying
 
