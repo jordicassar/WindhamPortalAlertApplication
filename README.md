@@ -29,7 +29,7 @@ All times are shown and entered in Eastern time (America/New_York).
 
 - **Next.js 16** (React 19, TypeScript, App Router, Server Actions)
 - **Tailwind CSS 4** for styling
-- **PostgreSQL** with **Prisma 7**
+- **PostgreSQL** with **Prisma 7** (Neon Database across development, staging, and production environments)
 - **Tiptap** rich-text editor
 - Signed-cookie staff sessions (`jose`) with bcrypt-hashed passwords
 - `sanitize-html` allowlist for alert HTML; `zod` for validating every form
@@ -79,7 +79,8 @@ so pull request previews never touch production data.
 ### Release flow
 
 1. **Feature branch → pull request into `main`.** CI runs, and Vercel builds a preview that uses
-   the development database. Review the change on the preview link.
+   the development database. Review the change on the preview link, which the Vercel bot posts
+   as a comment on the pull request.
 2. **Merge into `main`.** Vercel deploys it to staging, with the staging database. Test it there,
    and have the Requirements group check it if needed.
 3. **Promote: pull request from `main` into `release`.** Title it e.g. `Release 2026-10-15` and
