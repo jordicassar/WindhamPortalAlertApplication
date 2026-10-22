@@ -79,7 +79,8 @@ so pull request previews never touch production data.
 ### Release flow
 
 1. **Feature branch → pull request into `main`.** CI runs, and Vercel builds a preview that uses
-   the development database. Review the change on the preview link.
+   the development database. Review the change on the preview link, which the Vercel bot posts
+   as a comment on the pull request.
 2. **Merge into `main`.** Vercel deploys it to staging, with the staging database. Test it there,
    and have the Requirements group check it if needed.
 3. **Promote: pull request from `main` into `release`.** Title it e.g. `Release 2026-10-15` and
