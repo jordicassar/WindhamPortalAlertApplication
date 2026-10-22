@@ -26,13 +26,12 @@ Emergency alerts appear as a red banner on every resident page and go to every s
 All times are shown and entered in Eastern time (America/New_York).
 
 ## Tech stack
-
 - **Next.js 16** (React 19, TypeScript, App Router, Server Actions)
 - **Tailwind CSS 4** for styling
-- **PostgreSQL** with **Prisma 7**
+- **PostgreSQL** with **Prisma 7** (Neon Database across development, staging, and production environments)
 - **Tiptap** rich-text editor
-- Signed-cookie staff sessions (`jose`) with bcrypt-hashed passwords
-- `sanitize-html` allowlist for alert HTML; `zod` for validating every form
+- Signed-cookie staff sessions (jose) with bcrypt-hashed passwords
+- sanitize-html allowlist for alert HTML; zod for validating every form
 
 ## Running it locally
 
