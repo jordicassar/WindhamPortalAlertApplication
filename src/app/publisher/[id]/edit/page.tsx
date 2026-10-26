@@ -41,6 +41,7 @@ async function EditAlert({ params }: Pick<PageProps<'/publisher/[id]/edit'>, 'pa
         bodyHtml: alert.bodyHtml,
         categoryId: alert.categoryId,
         severity: alert.severity,
+        publishAt: alert.publishAt?.toISOString() ?? null,
         expiresAt: alert.expiresAt?.toISOString() ?? null,
         reviewNote: alert.status === 'REJECTED' ? alert.reviewNote : null,
       }}

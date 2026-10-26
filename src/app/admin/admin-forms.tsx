@@ -6,7 +6,7 @@ import { approveAlert, rejectAlert } from '@/app/actions/alerts';
 import { SubmitButton } from '@/components/submit-button';
 import { btn, card, input, Notice } from '@/components/ui';
 
-export function ReviewActions({ alertId }: { alertId: string }) {
+export function ReviewActions({ alertId, scheduled }: { alertId: string; scheduled: boolean }) {
   const [approveState, approve] = useActionState(approveAlert, {});
   const [rejectState, reject] = useActionState(rejectAlert, {});
   const [rejecting, setRejecting] = useState(false);
@@ -17,7 +17,11 @@ export function ReviewActions({ alertId }: { alertId: string }) {
       <div className="flex flex-wrap gap-2">
         <form action={approve}>
           <input type="hidden" name="id" value={alertId} />
-          <SubmitButton pendingText="Publishing…">Approve &amp; publish</SubmitButton>
+          {scheduled ? (
+            <SubmitButton pendingText="Scheduling…">Approve &amp; schedule</SubmitButton>
+          ) : (
+            <SubmitButton pendingText="Publishing…">Approve &amp; publish</SubmitButton>
+          )}
         </form>
         {!rejecting && (
           <button type="button" className={btn('danger')} onClick={() => setRejecting(true)}>

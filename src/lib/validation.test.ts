@@ -57,6 +57,7 @@ describe('alertSchema', () => {
     bodyHtml: '<p>Move your car.</p>',
     categoryId: CATEGORY,
     severity: 'EMERGENCY',
+    publishAt: '',
     expiresAt: '',
     intent: 'submit',
     ...overrides,
@@ -67,18 +68,29 @@ describe('alertSchema', () => {
     expect(result.success).toBe(true);
     expect(result.data?.title).toBe('Parking ban tonight');
     expect(result.data?.id).toBeUndefined();
+    expect(result.data?.publishAt).toBeNull();
     expect(result.data?.expiresAt).toBeNull();
   });
 
-  it('reads the expiry time as Eastern time', () => {
-    const result = alertSchema.safeParse(alert({ expiresAt: '2026-12-04T18:30' }));
-    expect(result.data?.expiresAt?.toISOString()).toBe('2026-12-04T23:30:00.000Z');
+  it('treats a missing publish time as publish on approval', () => {
+    const result = alertSchema.safeParse(alert({ publishAt: undefined }));
+    expect(result.data?.publishAt).toBeNull();
   });
 
-  it('rejects an empty title, unknown severity and malformed expiry', () => {
+  it('reads the publish and expiry times as Eastern time', () => {
+    const result = alertSchema.safeParse(
+      alert({ publishAt: '2026-07-04T06:00', expiresAt: '2026-12-04T18:30' }),
+    );
+    expect(result.data?.publishAt?.toISOString()).toBe('2026-07-04T10:00:00.000Z'); // EDT
+    expect(result.data?.expiresAt?.toISOString()).toBe('2026-12-04T23:30:00.000Z'); // EST
+  });
+
+  it('rejects an empty title, unknown severity and malformed times', () => {
     expect(alertSchema.safeParse(alert({ title: '   ' })).success).toBe(false);
     expect(alertSchema.safeParse(alert({ severity: 'URGENT' })).success).toBe(false);
     expect(alertSchema.safeParse(alert({ expiresAt: 'next friday' })).success).toBe(false);
+    const badPublish = alertSchema.safeParse(alert({ publishAt: 'tomorrow 6am' }));
+    expect(badPublish.error?.issues[0].message).toBe('Enter a valid publish time.');
   });
 
   it('rejects titles over 120 characters', () => {

@@ -79,6 +79,7 @@ export const STATUS_LABEL: Record<AlertStatus, string> = {
   PUBLISHED: 'Published',
   REJECTED: 'Changes requested',
   ARCHIVED: 'Archived',
+  SCHEDULED: 'Scheduled',
 };
 
 export function truncate(text: string, max: number): string {

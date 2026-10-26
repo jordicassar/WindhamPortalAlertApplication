@@ -3,7 +3,15 @@ import Link from 'next/link';
 import { Suspense } from 'react';
 import { deleteDraft } from '@/app/actions/alerts';
 import { SubmitButton } from '@/components/submit-button';
-import { btn, EmptyState, Notice, PageTitle, SeverityBadge, StatusBadge } from '@/components/ui';
+import {
+  btn,
+  EmptyState,
+  Notice,
+  PageTitle,
+  PublishTime,
+  SeverityBadge,
+  StatusBadge,
+} from '@/components/ui';
 import { requirePageUser } from '@/lib/dal';
 import { db } from '@/lib/db';
 import { formatDateTime } from '@/lib/format';
@@ -87,6 +95,7 @@ async function PublisherContent({ searchParams }: Pick<PageProps<'/publisher'>, 
                     </td>
                     <td className="px-3 py-2.5">
                       <StatusBadge status={a.status} />
+                      <PublishTime alert={a} />
                     </td>
                     <td className="whitespace-nowrap px-3 py-2.5">{formatDateTime(a.updatedAt)}</td>
                     <td className="whitespace-nowrap px-3 py-2.5 text-right">

@@ -1,0 +1,47 @@
+name: Publish scheduled alerts
+
+# Calls the portal's publish-scheduled endpoint so approved alerts with a future
+# "Publish at" time go live (see src/app/api/cron/publish-scheduled/route.ts).
+# Vercel's free plan only runs its own cron jobs once a day, so GitHub runs this one.
+# GitHub may start scheduled runs a few minutes late when it is busy.
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  # Lets you run it by hand from the Actions tab.
+  workflow_dispatch:
+
+permissions: {}
+
+# Never let a slow run pile up behind the next one.
+concurrency:
+  group: publish-scheduled
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Publish due alerts (${{ matrix.environment }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - environment: production
+            url: https://windhamportalalertapplication.vercel.app
+            secret: PRODUCTION_CRON_SECRET
+          - environment: staging
+            url: https://windham-alerts-staging.vercel.app
+            secret: STAGING_CRON_SECRET
+    steps:
+      - name: Call the endpoint
+        env:
+          CRON_SECRET: ${{ secrets[matrix.secret] }}
+          URL: ${{ matrix.url }}/api/cron/publish-scheduled
+        run: |
+          if [ -z "$CRON_SECRET" ]; then
+            echo "::warning::${{ matrix.secret }} is not set in the repository's Actions secrets; skipping ${{ matrix.environment }}."
+            exit 0
+          fi
+          curl --fail-with-body --silent --show-error --max-time 60 \
+            --retry 2 --retry-all-errors \
+            --header "Authorization: Bearer $CRON_SECRET" "$URL"

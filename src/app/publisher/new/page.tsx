@@ -30,6 +30,7 @@ async function NewAlert() {
         bodyHtml: '',
         categoryId: categories[0]?.id ?? '',
         severity: 'INFO',
+        publishAt: null,
         expiresAt: null,
         reviewNote: null,
       }}
