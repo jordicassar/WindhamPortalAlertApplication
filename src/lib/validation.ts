@@ -6,6 +6,14 @@ import { fromEasternInput } from './format';
 const trimmed = (max: number) => z.string().trim().max(max);
 const emailField = z.string().trim().toLowerCase().pipe(z.email('Enter a valid email address.'));
 
+/** Optional datetime-local value, always interpreted as Eastern time. Empty becomes null. */
+const easternDateTime = (message: string) =>
+  z
+    .string()
+    .optional()
+    .refine((v) => !v || fromEasternInput(v) !== null, message)
+    .transform((v) => (v ? fromEasternInput(v) : null));
+
 export const loginSchema = z.object({
   email: emailField,
   password: z.string().min(1, 'Enter your password.').max(200),
@@ -20,12 +28,8 @@ export const alertSchema = z.object({
   bodyHtml: z.string().max(200_000, 'The message is too long.'),
   categoryId: z.cuid('Choose a category.'),
   severity: z.enum(['INFO', 'ADVISORY', 'EMERGENCY']),
-  /** datetime-local value, always interpreted as Eastern time. */
-  expiresAt: z
-    .string()
-    .optional()
-    .refine((v) => !v || fromEasternInput(v) !== null, 'Enter a valid expiry time.')
-    .transform((v) => (v ? fromEasternInput(v) : null)),
+  publishAt: easternDateTime('Enter a valid publish time.'),
+  expiresAt: easternDateTime('Enter a valid expiry time.'),
   intent: z.enum(['draft', 'submit']),
 });
 

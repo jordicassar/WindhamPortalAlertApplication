@@ -16,11 +16,11 @@ town staff, approved by an administrator, and published to the public site and s
 
 ## What it does
 
-| Who                                | Can                                                                                                                                                   |
-| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Residents** (no account)         | Read current and past alerts, filter by topic and severity, search, open a shareable link for any alert, subscribe by email or text, unsubscribe      |
-| **Publishers** (town staff)        | Write alerts with a rich-text editor (bold, headings, lists, **hyperlinks, photos**), preview, save drafts, submit for approval, fix alerts sent back |
-| **Admins** (Town Manager's office) | Approve or send back alerts, archive alerts, manage staff accounts and categories, view the audit log                                                 |
+| Who                                | Can                                                                                                                                                                            |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Residents** (no account)         | Read current and past alerts, filter by topic and severity, search, open a shareable link for any alert, subscribe by email or text, unsubscribe                               |
+| **Publishers** (town staff)        | Write alerts with a rich-text editor (bold, headings, lists, **hyperlinks, photos**), preview, save drafts, schedule a publish time, submit for approval, fix alerts sent back |
+| **Admins** (Town Manager's office) | Approve or send back alerts, archive alerts, manage staff accounts and categories, view the audit log                                                                          |
 
 Emergency alerts appear as a red banner on every resident page and go to every subscriber.
 All times are shown and entered in Eastern time (America/New_York).
@@ -153,11 +153,33 @@ Each environment has its own values in Vercel:
 | `DATABASE_URL_UNPOOLED` | Direct connection to the same branch, used by migrations                                          |
 | `SESSION_SECRET`        | Random 32+ character string, different per environment: `openssl rand -base64 32`                 |
 | `SEED_STAFF_PASSWORD`   | Password for the demo staff accounts in development and staging; share it privately with the team |
+| `CRON_SECRET`           | Random string, different per environment; protects the scheduled-publishing endpoint (see below)  |
 
 Production's database variables come from the Neon integration. Development and all preview
 branches use the `development` branch; previews of `main` (staging) use the `staging` branch.
 The Neon integration also adds `POSTGRES_*`, `PG*` and `NEON_PROJECT_ID`; the app doesn't use
 them.
+
+### Scheduled publishing
+
+Publishers can set a **Publish at** time (Eastern). When an admin approves such an alert it
+becomes **Scheduled**, and goes live when a job calls `/api/cron/publish-scheduled`, which
+publishes due alerts, queues their notifications and refreshes the residents' page. Alerts
+without a publish time still go live the moment they are approved.
+
+Vercel's free plan only runs cron jobs once a day, so the
+[Publish scheduled alerts](.github/workflows/publish-scheduled.yml) GitHub workflow calls the
+endpoint every 5 minutes for production and staging. Scheduled alerts therefore go live within
+about 5 minutes of their time (later if GitHub is busy). To set it up, generate one secret per
+environment and add it in two places:
+
+- **Vercel:** `CRON_SECRET` for Production, and for Preview on the `main` branch (staging).
+- **GitHub:** repository Settings → Secrets and variables → Actions: `PRODUCTION_CRON_SECRET`
+  and `STAGING_CRON_SECRET`, with the matching values.
+
+Until a secret is set the workflow skips that environment with a warning. On the Pro plan,
+Vercel Cron can call the same endpoint every minute instead. GitHub turns off scheduled
+workflows after 60 days without commits; re-enable it from the Actions tab if that happens.
 
 ### Seeding development and staging
 

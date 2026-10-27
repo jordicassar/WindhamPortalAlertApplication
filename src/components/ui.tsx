@@ -1,5 +1,5 @@
 import type { AlertStatus, Severity } from '@/generated/prisma/enums';
-import { SEVERITY_LABEL, STATUS_LABEL } from '@/lib/format';
+import { formatDateTime, SEVERITY_LABEL, STATUS_LABEL } from '@/lib/format';
 import { CheckCircleIcon, InfoIcon, SirenIcon, WarningIcon } from './icons';
 
 /** Small shared building blocks. Kept as class strings so server and client components can use them. */
@@ -52,6 +52,7 @@ const STATUS_STYLE: Record<AlertStatus, string> = {
   PUBLISHED: 'bg-ok-soft text-ok',
   REJECTED: 'bg-emergency-soft text-emergency',
   ARCHIVED: 'bg-surface-2 text-muted',
+  SCHEDULED: 'bg-info-soft text-info',
 };
 
 const pill =
@@ -68,6 +69,17 @@ export function SeverityBadge({ severity }: { severity: Severity }) {
 
 export function StatusBadge({ status }: { status: AlertStatus }) {
   return <span className={cx(pill, STATUS_STYLE[status])}>{STATUS_LABEL[status]}</span>;
+}
+
+/** "Publishes Dec 4, 6:30 PM" under the status, for alerts with a publish time that hasn't happened yet. */
+export function PublishTime({ alert }: { alert: { status: AlertStatus; publishAt: Date | null } }) {
+  const upcoming = ['DRAFT', 'PENDING', 'REJECTED', 'SCHEDULED'].includes(alert.status);
+  if (!alert.publishAt || !upcoming) return null;
+  return (
+    <div className="mt-1 whitespace-nowrap text-xs text-muted">
+      Publishes {formatDateTime(alert.publishAt)}
+    </div>
+  );
 }
 
 export function Notice({ kind, children }: { kind: 'error' | 'ok'; children: React.ReactNode }) {

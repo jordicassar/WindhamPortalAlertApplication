@@ -5,7 +5,15 @@ import { setStaffActive } from '@/app/actions/admin';
 import { archiveAlert } from '@/app/actions/alerts';
 import { AlertArticle } from '@/components/alert-article';
 import { SubmitButton } from '@/components/submit-button';
-import { card, cx, EmptyState, PageTitle, SeverityBadge, StatusBadge } from '@/components/ui';
+import {
+  card,
+  cx,
+  EmptyState,
+  PageTitle,
+  PublishTime,
+  SeverityBadge,
+  StatusBadge,
+} from '@/components/ui';
 import { requirePageUser } from '@/lib/dal';
 import { db } from '@/lib/db';
 import { formatDateTime } from '@/lib/format';
@@ -140,6 +148,13 @@ async function Queue() {
           <div key={a.id}>
             <p className="mb-1.5 text-sm text-muted">
               Submitted by <strong>{a.author.name}</strong> · {formatDateTime(a.updatedAt)}
+              {a.publishAt && (
+                <>
+                  {' '}
+                  · <strong>Publish at {formatDateTime(a.publishAt)}</strong>
+                  {a.publishAt <= new Date() && ' (passed: approving publishes it now)'}
+                </>
+              )}
             </p>
             <AlertArticle
               mode="full"
@@ -151,11 +166,11 @@ async function Queue() {
                 severity: a.severity,
                 categoryName: a.category.name,
                 authorName: a.author.name,
-                publishedAt: a.updatedAt.toISOString(),
+                publishedAt: (a.publishAt ?? a.updatedAt).toISOString(),
                 expiresAt: a.expiresAt?.toISOString() ?? null,
               }}
             />
-            <ReviewActions alertId={a.id} />
+            <ReviewActions alertId={a.id} scheduled={!!a.publishAt && a.publishAt > new Date()} />
           </div>
         );
       })}
@@ -193,6 +208,7 @@ async function AllAlerts() {
           </td>
           <td className={td}>
             <StatusBadge status={a.status} />
+            <PublishTime alert={a} />
           </td>
           <td className={`${td} whitespace-nowrap text-muted`}>
             {a.dispatches[0]
@@ -206,6 +222,14 @@ async function AllAlerts() {
                 <input type="hidden" name="id" value={a.id} />
                 <SubmitButton variant="ghost" small pendingText="Archiving…">
                   Archive
+                </SubmitButton>
+              </form>
+            )}
+            {a.status === 'SCHEDULED' && (
+              <form action={archiveAlert}>
+                <input type="hidden" name="id" value={a.id} />
+                <SubmitButton variant="danger" small pendingText="Cancelling…">
+                  Cancel
                 </SubmitButton>
               </form>
             )}

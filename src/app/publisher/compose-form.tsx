@@ -18,6 +18,7 @@ export type ComposeInitial = {
   bodyHtml: string;
   categoryId: string;
   severity: Severity;
+  publishAt: string | null;
   expiresAt: string | null;
   reviewNote: string | null;
 };
@@ -36,7 +37,8 @@ export function ComposeForm({
   const [bodyHtml, setBodyHtml] = useState(initial.bodyHtml);
   const [categoryId, setCategoryId] = useState(initial.categoryId);
   const [severity, setSeverity] = useState<Severity>(initial.severity);
-  // Expiry is entered in Eastern time regardless of the browser's zone; the server converts it.
+  // Times are entered in Eastern time regardless of the browser's zone; the server converts them.
+  const [publishLocal, setPublishLocal] = useState(toEasternInput(initial.publishAt));
   const [expiresLocal, setExpiresLocal] = useState(toEasternInput(initial.expiresAt));
   const [previewing, setPreviewing] = useState(false);
 
@@ -67,7 +69,7 @@ export function ComposeForm({
         />
       </label>
 
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-2">
         <label className="grid gap-1 text-sm font-semibold">
           Category
           <select
@@ -99,6 +101,20 @@ export function ComposeForm({
           </select>
         </label>
         <label className="grid gap-1 text-sm font-semibold">
+          Publish at, Eastern time (optional)
+          <input
+            type="datetime-local"
+            name="publishAt"
+            value={publishLocal}
+            onChange={(e) => setPublishLocal(e.target.value)}
+            aria-describedby="publish-at-hint"
+            className={input}
+          />
+          <span id="publish-at-hint" className="font-normal text-muted">
+            Leave empty to publish as soon as it is approved.
+          </span>
+        </label>
+        <label className="grid gap-1 text-sm font-semibold content-start">
           Expires, Eastern time (optional)
           <input
             type="datetime-local"
@@ -137,7 +153,7 @@ export function ComposeForm({
               severity,
               categoryName: categories.find((c) => c.id === categoryId)?.name ?? '',
               authorName,
-              publishedAt: new Date().toISOString(),
+              publishedAt: (fromEasternInput(publishLocal) ?? new Date()).toISOString(),
               expiresAt: fromEasternInput(expiresLocal)?.toISOString() ?? null,
             }}
           />
