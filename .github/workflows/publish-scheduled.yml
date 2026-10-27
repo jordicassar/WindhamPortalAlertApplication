@@ -28,18 +28,31 @@ jobs:
         include:
           - environment: production
             url: https://windhamportalalertapplication.vercel.app
-            secret: PRODUCTION_CRON_SECRET
           - environment: staging
             url: https://windham-alerts-staging.vercel.app
-            secret: STAGING_CRON_SECRET
     steps:
-      - name: Call the endpoint
+      - name: Call the endpoint (production)
+        if: matrix.environment == 'production'
         env:
-          CRON_SECRET: ${{ secrets[matrix.secret] }}
+          CRON_SECRET: ${{ secrets.PRODUCTION_CRON_SECRET }}
           URL: ${{ matrix.url }}/api/cron/publish-scheduled
         run: |
           if [ -z "$CRON_SECRET" ]; then
-            echo "::warning::${{ matrix.secret }} is not set in the repository's Actions secrets; skipping ${{ matrix.environment }}."
+            echo "::warning::PRODUCTION_CRON_SECRET is not set in the repository's Actions secrets; skipping ${{ matrix.environment }}."
+            exit 0
+          fi
+          curl --fail-with-body --silent --show-error --max-time 60 \
+            --retry 2 --retry-all-errors \
+            --header "Authorization: Bearer $CRON_SECRET" "$URL"
+
+      - name: Call the endpoint (staging)
+        if: matrix.environment == 'staging'
+        env:
+          CRON_SECRET: ${{ secrets.STAGING_CRON_SECRET }}
+          URL: ${{ matrix.url }}/api/cron/publish-scheduled
+        run: |
+          if [ -z "$CRON_SECRET" ]; then
+            echo "::warning::STAGING_CRON_SECRET is not set in the repository's Actions secrets; skipping ${{ matrix.environment }}."
             exit 0
           fi
           curl --fail-with-body --silent --show-error --max-time 60 \
