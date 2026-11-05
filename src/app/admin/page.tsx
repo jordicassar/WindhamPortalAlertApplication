@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Form from 'next/form';
 import Link from 'next/link';
 import { Suspense } from 'react';
 import { setStaffActive } from '@/app/actions/admin';
@@ -6,14 +7,23 @@ import { archiveAlert } from '@/app/actions/alerts';
 import { AlertArticle } from '@/components/alert-article';
 import { SubmitButton } from '@/components/submit-button';
 import {
+  btn,
   card,
   cx,
   EmptyState,
+  input,
   PageTitle,
   PublishTime,
   SeverityBadge,
   StatusBadge,
 } from '@/components/ui';
+import {
+  AUDIT_PAGE_SIZE,
+  auditHref,
+  auditWhere,
+  readAuditFilters,
+  type AuditFilters,
+} from '@/lib/audit-search';
 import { requirePageUser } from '@/lib/dal';
 import { db } from '@/lib/db';
 import { formatDateTime } from '@/lib/format';
@@ -41,7 +51,8 @@ export default function AdminPage({ searchParams }: PageProps<'/admin'>) {
 
 async function AdminContent({ searchParams }: Pick<PageProps<'/admin'>, 'searchParams'>) {
   const admin = await requirePageUser(['ADMIN']);
-  const requested = (await searchParams).tab;
+  const params = await searchParams;
+  const requested = params.tab;
   const tab: Tab = TABS.some((t) => t.id === requested) ? (requested as Tab) : 'queue';
 
   const [pending, live, staff, subscribers, queued] = await Promise.all([
@@ -97,7 +108,7 @@ async function AdminContent({ searchParams }: Pick<PageProps<'/admin'>, 'searchP
       {tab === 'alerts' && <AllAlerts />}
       {tab === 'staff' && <Staff currentUserId={admin.id} />}
       {tab === 'categories' && <Categories />}
-      {tab === 'audit' && <Audit />}
+      {tab === 'audit' && <Audit filters={readAuditFilters(params)} />}
     </>
   );
 }
@@ -302,23 +313,152 @@ async function Categories() {
   );
 }
 
-async function Audit() {
-  const entries = await db.auditEntry.findMany({ orderBy: { at: 'desc' }, take: 200 });
+async function Audit({ filters }: { filters: AuditFilters }) {
+  const where = auditWhere(filters);
+  const [entries, total, people, actions] = await Promise.all([
+    db.auditEntry.findMany({
+      where,
+      orderBy: [{ at: 'desc' }, { id: 'desc' }],
+      skip: (filters.page - 1) * AUDIT_PAGE_SIZE,
+      take: AUDIT_PAGE_SIZE,
+    }),
+    db.auditEntry.count({ where }),
+    db.auditEntry.findMany({
+      distinct: ['actorLabel'],
+      select: { actorLabel: true },
+      orderBy: { actorLabel: 'asc' },
+    }),
+    db.auditEntry.findMany({
+      distinct: ['action'],
+      select: { action: true },
+      orderBy: { action: 'asc' },
+    }),
+  ]);
+  const filtered = Object.values(where).length > 0;
+  const first = (filters.page - 1) * AUDIT_PAGE_SIZE + 1;
+  const last = first + entries.length - 1;
+  const pages = Math.max(1, Math.ceil(total / AUDIT_PAGE_SIZE));
+
   return (
     <>
-      <p className="mb-3 text-sm text-muted">
-        Every change made in the portal is recorded here. Showing the latest 200 entries.
+      <p className="mb-3 text-sm text-muted">Every change made in the portal is recorded here.</p>
+
+      {/* A GET form: the filters live in the URL, so a search can be bookmarked or shared.
+          The key resets the inputs to the URL's filters after "Clear filters" or Back. */}
+      <Form
+        key={auditHref(filters)}
+        action="/admin"
+        aria-label="Search the audit log"
+        className={cx(card, 'mb-4 grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-6')}
+      >
+        <input type="hidden" name="tab" value="audit" />
+        <label className="grid gap-1 text-sm font-semibold sm:col-span-2">
+          Search
+          <input
+            type="search"
+            name="q"
+            defaultValue={filters.q}
+            maxLength={100}
+            placeholder="Name, action or detail"
+            className={input}
+          />
+        </label>
+        <label className="grid gap-1 text-sm font-semibold">
+          Who
+          <select name="who" defaultValue={filters.who} className={input}>
+            <option value="">Anyone</option>
+            {people.map((p) => (
+              <option key={p.actorLabel}>{p.actorLabel}</option>
+            ))}
+          </select>
+        </label>
+        <label className="grid gap-1 text-sm font-semibold">
+          Action
+          <select name="action" defaultValue={filters.action} className={input}>
+            <option value="">Any action</option>
+            {actions.map((a) => (
+              <option key={a.action}>{a.action}</option>
+            ))}
+          </select>
+        </label>
+        <label className="grid gap-1 text-sm font-semibold">
+          From
+          <input type="date" name="from" defaultValue={filters.from} className={input} />
+        </label>
+        <label className="grid gap-1 text-sm font-semibold">
+          To
+          <input type="date" name="to" defaultValue={filters.to} className={input} />
+        </label>
+        <div className="flex flex-wrap items-center gap-2 sm:col-span-2 lg:col-span-6">
+          <button type="submit" className={btn('primary')}>
+            Search
+          </button>
+          {filtered && (
+            <Link href="/admin?tab=audit" className={btn('ghost')}>
+              Clear filters
+            </Link>
+          )}
+          <span className="text-sm text-muted">
+            Dates are Eastern time and include the whole day.
+          </span>
+        </div>
+      </Form>
+
+      <p className="mb-3 text-sm text-muted" role="status">
+        {entries.length
+          ? `Showing ${first}–${last} of ${total} ${filtered ? 'matching ' : ''}${total === 1 ? 'entry' : 'entries'}`
+          : null}
       </p>
-      <Table head={['When', 'Who', 'Action', 'Detail']}>
-        {entries.map((e) => (
-          <tr key={e.id} className="border-t border-border align-top">
-            <td className={`${td} whitespace-nowrap`}>{formatDateTime(e.at)}</td>
-            <td className={td}>{e.actorLabel}</td>
-            <td className={td}>{e.action}</td>
-            <td className={td}>{e.detail}</td>
-          </tr>
-        ))}
-      </Table>
+
+      {entries.length ? (
+        <Table head={['When', 'Who', 'Action', 'Detail']}>
+          {entries.map((e) => (
+            <tr key={e.id} className="border-t border-border align-top">
+              <td className={`${td} whitespace-nowrap`}>{formatDateTime(e.at)}</td>
+              <td className={td}>{e.actorLabel}</td>
+              <td className={td}>{e.action}</td>
+              <td className={td}>{e.detail}</td>
+            </tr>
+          ))}
+        </Table>
+      ) : (
+        <EmptyState>
+          {total > 0 ? (
+            <>
+              There are only {pages} {pages === 1 ? 'page' : 'pages'}.{' '}
+              <Link href={auditHref(filters, 1)} className="font-semibold text-brand underline">
+                Go to the first page
+              </Link>
+            </>
+          ) : filtered ? (
+            'No entries match these filters.'
+          ) : (
+            'Nothing has been recorded yet.'
+          )}
+        </EmptyState>
+      )}
+
+      {total > AUDIT_PAGE_SIZE && entries.length > 0 && (
+        <nav aria-label="Audit log pages" className="mt-4 flex items-center justify-between gap-3">
+          {filters.page > 1 ? (
+            <Link href={auditHref(filters, filters.page - 1)} className={btn()}>
+              ← Newer
+            </Link>
+          ) : (
+            <span />
+          )}
+          <span className="text-sm text-muted">
+            Page {filters.page} of {pages}
+          </span>
+          {filters.page < pages ? (
+            <Link href={auditHref(filters, filters.page + 1)} className={btn()}>
+              Older →
+            </Link>
+          ) : (
+            <span />
+          )}
+        </nav>
+      )}
     </>
   );
 }
