@@ -6,12 +6,14 @@ import { saveAlert } from '@/app/actions/alerts';
 import { AlertArticle, type AlertView } from '@/components/alert-article';
 import { AlertEditor } from '@/components/alert-editor';
 import { IconPicker } from '@/components/IconPicker';
+import { LocationPicker } from '@/components/location-picker';
 import { PhonePreview } from '@/components/phone-preview';
 import { SubmitButton } from '@/components/submit-button';
 import { btn, card, input, Notice } from '@/components/ui';
 import type { Severity } from '@/generated/prisma/enums';
 import { fromEasternInput, SEVERITY_HINT, SEVERITY_LABEL, toEasternInput } from '@/lib/format';
 import { getDefaultAlertIcon, type AlertIconId } from '@/lib/alert-icons';
+import type { AlertLocation } from '@/lib/map';
 import { alertLink, smsText } from '@/lib/sms';
 
 const TITLE_MAX = 120;

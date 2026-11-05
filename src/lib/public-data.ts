@@ -2,6 +2,7 @@ import 'server-only';
 import { cacheLife, cacheTag } from 'next/cache';
 import { db } from './db';
 import type { AlertIconId } from './alert-icons';
+import { toLocation, type AlertLocation } from './map';
 import { alertHtmlToText, sanitizeAlertHtml } from './sanitize';
 
 /**

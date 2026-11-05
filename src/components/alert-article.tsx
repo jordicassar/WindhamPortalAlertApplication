@@ -2,8 +2,9 @@ import Link from 'next/link';
 import type { Severity } from '@/generated/prisma/enums';
 import { formatDateTime, truncate } from '@/lib/format';
 import { getDefaultAlertIcon, type AlertIconId } from '@/lib/alert-icons';
+import type { AlertLocation } from '@/lib/map';
 import { AlertIconBadge } from './AlertIconBadge';
-import { ChevronDownIcon, ClockIcon, LinkIcon, TagIcon } from './icons';
+import { ChevronDownIcon, ClockIcon, LinkIcon, MapPinIcon, TagIcon } from './icons';
 import { btn, cx, SeverityBadge } from './ui';
 
 const SEVERITY_BAR: Record<Severity, string> = {
