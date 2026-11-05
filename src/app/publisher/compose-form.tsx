@@ -5,11 +5,13 @@ import { useActionState, useState } from 'react';
 import { saveAlert } from '@/app/actions/alerts';
 import { AlertArticle, type AlertView } from '@/components/alert-article';
 import { AlertEditor } from '@/components/alert-editor';
+import { LocationPicker } from '@/components/location-picker';
 import { PhonePreview } from '@/components/phone-preview';
 import { SubmitButton } from '@/components/submit-button';
 import { btn, card, input, Notice } from '@/components/ui';
 import type { Severity } from '@/generated/prisma/enums';
 import { fromEasternInput, SEVERITY_HINT, SEVERITY_LABEL, toEasternInput } from '@/lib/format';
+import type { AlertLocation } from '@/lib/map';
 import { alertLink, smsText } from '@/lib/sms';
 
 const TITLE_MAX = 120;
@@ -62,6 +64,7 @@ export function ComposeForm({
     authorName,
     publishedAt: fromEasternInput(publishLocal)?.toISOString() ?? now,
     expiresAt: fromEasternInput(expiresLocal)?.toISOString() ?? null,
+    location,
   };
   const sms = smsText({
     severity,
@@ -170,6 +173,8 @@ export function ComposeForm({
             onTextChange={setBodyText}
           />
         </div>
+
+        <LocationPicker initial={initial.location} onChange={setLocation} />
 
         {previewing && (
           <div className="rounded-xl border-2 border-dashed border-border p-3">
