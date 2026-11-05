@@ -40,6 +40,7 @@ async function EditAlert({ params }: Pick<PageProps<'/publisher/[id]/edit'>, 'pa
         id: alert.id,
         title: alert.title,
         bodyHtml: alert.bodyHtml,
+        iconId: alert.iconId,
         categoryId: alert.categoryId,
         severity: alert.severity,
         publishAt: alert.publishAt?.toISOString() ?? null,

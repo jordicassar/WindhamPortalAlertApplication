@@ -1,6 +1,7 @@
 import 'server-only';
 import { cacheLife, cacheTag } from 'next/cache';
 import { db } from './db';
+import type { AlertIconId } from './alert-icons';
 import { alertHtmlToText, sanitizeAlertHtml } from './sanitize';
 
 /**
@@ -24,6 +25,7 @@ export type PublicAlert = {
   bodyHtml: string;
   bodyText: string;
   severity: 'INFO' | 'ADVISORY' | 'EMERGENCY';
+  iconId: AlertIconId | null;
   categoryId: string;
   categoryName: string;
   authorName: string;
@@ -36,6 +38,7 @@ const publicSelect = {
   title: true,
   bodyHtml: true,
   severity: true,
+  iconId: true,
   publishedAt: true,
   expiresAt: true,
   categoryId: true,
@@ -48,6 +51,7 @@ type Row = {
   title: string;
   bodyHtml: string;
   severity: PublicAlert['severity'];
+  iconId: AlertIconId | null;
   publishedAt: Date | null;
   expiresAt: Date | null;
   categoryId: string;
@@ -63,6 +67,7 @@ function toPublic(row: Row): PublicAlert {
     bodyHtml,
     bodyText: alertHtmlToText(bodyHtml),
     severity: row.severity,
+    iconId: row.iconId,
     categoryId: row.categoryId,
     categoryName: row.category.name,
     authorName: row.author.name,
