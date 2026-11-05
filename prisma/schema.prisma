@@ -18,6 +18,25 @@ enum Severity {
   EMERGENCY
 }
 
+enum AlertIcon {
+  general
+  emergency
+  snowplow
+  weather
+  road_closure
+  traffic
+  construction
+  water
+  power
+  fire
+  health
+  school
+  trash
+  parks
+  meeting
+  event
+}
+
 enum AlertStatus {
   DRAFT
   PENDING
@@ -67,6 +86,8 @@ model Alert {
   /// Sanitized rich-text HTML (see src/lib/sanitize.ts).
   bodyHtml    String
   severity    Severity    @default(INFO)
+  /// Null means use the category's default icon.
+  iconId      AlertIcon?
   status      AlertStatus @default(DRAFT)
   reviewNote  String?
   createdAt   DateTime    @default(now())
@@ -150,14 +171,14 @@ model RateLimit {
 }
 
 model AuditEntry {
-  id      String   @id @default(cuid())
-  at      DateTime @default(now())
-  actorId String?
-  actor   User?    @relation(fields: [actorId], references: [id])
+  id         String   @id @default(cuid())
+  at         DateTime @default(now())
+  actorId    String?
+  actor      User?    @relation(fields: [actorId], references: [id])
   /// Display name at the time of the action ("Resident" for public actions).
   actorLabel String
-  action  String
-  detail  String
+  action     String
+  detail     String
 
   @@index([at])
 }

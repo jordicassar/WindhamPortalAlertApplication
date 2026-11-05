@@ -70,6 +70,12 @@ describe('alertSchema', () => {
     expect(result.data?.id).toBeUndefined();
     expect(result.data?.publishAt).toBeNull();
     expect(result.data?.expiresAt).toBeNull();
+    expect(result.data?.iconId).toBeNull();
+  });
+
+  it('accepts a fixed alert icon and rejects unknown icons', () => {
+    expect(alertSchema.safeParse(alert({ iconId: 'snowplow' })).data?.iconId).toBe('snowplow');
+    expect(alertSchema.safeParse(alert({ iconId: 'not-an-icon' })).success).toBe(false);
   });
 
   it('treats a missing publish time as publish on approval', () => {

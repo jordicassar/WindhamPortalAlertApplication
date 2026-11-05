@@ -176,6 +176,7 @@ async function Queue() {
                 bodyHtml,
                 bodyText: alertHtmlToText(bodyHtml),
                 severity: a.severity,
+                iconId: a.iconId,
                 categoryName: a.category.name,
                 authorName: a.author.name,
                 publishedAt: (a.publishAt ?? a.updatedAt).toISOString(),
