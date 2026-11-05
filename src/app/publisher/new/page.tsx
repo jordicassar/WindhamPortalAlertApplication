@@ -29,6 +29,7 @@ async function NewAlert() {
       initial={{
         title: '',
         bodyHtml: '',
+        iconId: null,
         categoryId: categories[0]?.id ?? '',
         severity: 'INFO',
         publishAt: null,

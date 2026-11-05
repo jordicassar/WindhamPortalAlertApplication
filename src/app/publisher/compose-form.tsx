@@ -5,11 +5,13 @@ import { useActionState, useState } from 'react';
 import { saveAlert } from '@/app/actions/alerts';
 import { AlertArticle, type AlertView } from '@/components/alert-article';
 import { AlertEditor } from '@/components/alert-editor';
+import { IconPicker } from '@/components/IconPicker';
 import { PhonePreview } from '@/components/phone-preview';
 import { SubmitButton } from '@/components/submit-button';
 import { btn, card, input, Notice } from '@/components/ui';
 import type { Severity } from '@/generated/prisma/enums';
 import { fromEasternInput, SEVERITY_HINT, SEVERITY_LABEL, toEasternInput } from '@/lib/format';
+import { getDefaultAlertIcon, type AlertIconId } from '@/lib/alert-icons';
 import { alertLink, smsText } from '@/lib/sms';
 
 const TITLE_MAX = 120;
@@ -20,6 +22,7 @@ export type ComposeInitial = {
   id?: string;
   title: string;
   bodyHtml: string;
+  iconId: AlertIconId | null;
   categoryId: string;
   severity: Severity;
   publishAt: string | null;
@@ -43,6 +46,7 @@ export function ComposeForm({
   const [state, action] = useActionState(saveAlert, {});
   const [title, setTitle] = useState(initial.title);
   const [bodyHtml, setBodyHtml] = useState(initial.bodyHtml);
+  const [iconId, setIconId] = useState<AlertIconId | null>(initial.iconId);
   const [bodyText, setBodyText] = useState('');
   const [categoryId, setCategoryId] = useState(initial.categoryId);
   const [severity, setSeverity] = useState<Severity>(initial.severity);
@@ -51,13 +55,16 @@ export function ComposeForm({
   const [expiresLocal, setExpiresLocal] = useState(toEasternInput(initial.expiresAt));
   const [previewing, setPreviewing] = useState(false);
 
+  const categoryName = categories.find((c) => c.id === categoryId)?.name ?? '';
+  const categoryDefault = getDefaultAlertIcon(categoryName);
   const preview: AlertView = {
     id: 'preview',
     title: title || '(No title yet)',
     bodyHtml,
     bodyText,
     severity,
-    categoryName: categories.find((c) => c.id === categoryId)?.name ?? '',
+    iconId,
+    categoryName,
     authorName,
     publishedAt: fromEasternInput(publishLocal)?.toISOString() ?? now,
     expiresAt: fromEasternInput(expiresLocal)?.toISOString() ?? null,
@@ -160,6 +167,13 @@ export function ComposeForm({
         >
           {SEVERITY_LABEL[severity]}: {SEVERITY_HINT[severity]}
         </p>
+
+        <IconPicker
+          value={iconId}
+          onChange={setIconId}
+          categoryDefault={categoryDefault}
+          name="iconId"
+        />
 
         <div className="grid gap-1 text-sm font-semibold">
           Message

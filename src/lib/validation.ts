@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { ALERT_ICON_IDS } from './alert-icons';
 import { fromEasternInput } from './format';
 
 /** Input schemas shared by server actions. Never trust what the browser sends. */
@@ -27,6 +28,10 @@ export const alertSchema = z.object({
   title: trimmed(120).min(1, 'Add a title.'),
   bodyHtml: z.string().max(200_000, 'The message is too long.'),
   categoryId: z.cuid('Choose a category.'),
+  iconId: z
+    .union([z.enum(ALERT_ICON_IDS), z.literal('')])
+    .optional()
+    .transform((value) => value || null),
   severity: z.enum(['INFO', 'ADVISORY', 'EMERGENCY']),
   publishAt: easternDateTime('Enter a valid publish time.'),
   expiresAt: easternDateTime('Enter a valid expiry time.'),

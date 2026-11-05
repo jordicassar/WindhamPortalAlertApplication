@@ -1,8 +1,10 @@
 import Link from 'next/link';
 import type { Severity } from '@/generated/prisma/enums';
 import { formatDateTime, truncate } from '@/lib/format';
+import { getDefaultAlertIcon, type AlertIconId } from '@/lib/alert-icons';
+import { AlertIconBadge } from './AlertIconBadge';
 import { ChevronDownIcon, ClockIcon, LinkIcon, TagIcon } from './icons';
-import { btn, cx, SEVERITY_STYLE, SeverityBadge, SeverityIcon } from './ui';
+import { btn, cx, SeverityBadge } from './ui';
 
 const SEVERITY_BAR: Record<Severity, string> = {
   INFO: 'before:bg-info',
@@ -17,6 +19,7 @@ export type AlertView = {
   bodyHtml: string;
   bodyText: string;
   severity: Severity;
+  iconId: AlertIconId | null;
   categoryName: string;
   authorName: string;
   publishedAt: string;
@@ -83,14 +86,11 @@ export function AlertArticle({
     dimmed && 'opacity-75',
   );
   const icon = (
-    <span
-      className={cx(
-        'hidden size-12 shrink-0 place-items-center rounded-xl @xl:grid',
-        SEVERITY_STYLE[alert.severity],
-      )}
-    >
-      <SeverityIcon severity={alert.severity} className="size-6" />
-    </span>
+    <AlertIconBadge
+      icon={alert.iconId ?? getDefaultAlertIcon(alert.categoryName)}
+      size="md"
+      className="size-10 @xl:size-12"
+    />
   );
 
   if (mode === 'full') {

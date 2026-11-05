@@ -44,6 +44,7 @@ export async function saveAlert(_prev: ActionState, formData: FormData): Promise
     title: fields.title,
     bodyHtml,
     categoryId: fields.categoryId,
+    iconId: fields.iconId,
     severity: fields.severity,
     publishAt: fields.publishAt,
     expiresAt: fields.expiresAt,
