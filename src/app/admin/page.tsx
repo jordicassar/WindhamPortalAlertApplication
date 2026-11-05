@@ -260,7 +260,9 @@ async function getExpiredIds(): Promise<Set<string>> {
 }
 
 async function Staff({ currentUserId }: { currentUserId: string }) {
-  const users = await db.user.findMany({ orderBy: [{ active: 'desc' }, { name: 'asc' }] });
+  const users = await db.user.findMany({
+    orderBy: [{ department: 'asc' }, { active: 'desc' }, { name: 'asc' }],
+  });
   return (
     <>
       <Table head={['Name', 'Email', 'Department', 'Role', 'Status', '']}>

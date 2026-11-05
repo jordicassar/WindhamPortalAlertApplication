@@ -18,9 +18,12 @@ const MAX_SOURCE_BYTES = 15 * 1024 * 1024;
 export function AlertEditor({
   initialHtml,
   onChange,
+  onTextChange,
 }: {
   initialHtml: string;
   onChange: (html: string) => void;
+  /** Plain text of the body, for the text message preview; also called once on load. */
+  onTextChange?: (text: string) => void;
 }) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -54,7 +57,11 @@ export function AlertEditor({
         'aria-multiline': 'true',
       },
     },
-    onUpdate: ({ editor }) => onChange(editor.getHTML()),
+    onCreate: ({ editor }) => onTextChange?.(editor.getText({ blockSeparator: ' ' })),
+    onUpdate: ({ editor }) => {
+      onChange(editor.getHTML());
+      onTextChange?.(editor.getText({ blockSeparator: ' ' }));
+    },
   });
 
   async function uploadPhoto(file: File) {
