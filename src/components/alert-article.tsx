@@ -24,6 +24,13 @@ export type AlertView = {
   location: AlertLocation | null;
 };
 
+/**
+ * An alert as residents see it. Collapsed alerts use <details> so they expand
+ * without any JavaScript. Also used as the staff preview.
+ *
+ * The layout responds to the width it is given (container queries), not the screen's,
+ * so the publisher's phone-sized preview shows the phone layout on a desktop too.
+ */
 export function AlertArticle({
   alert,
   mode,
@@ -84,7 +91,7 @@ export function AlertArticle({
   const icon = (
     <span
       className={cx(
-        'hidden size-12 shrink-0 place-items-center rounded-xl sm:grid',
+        'hidden size-12 shrink-0 place-items-center rounded-xl @xl:grid',
         SEVERITY_STYLE[alert.severity],
       )}
     >
@@ -94,41 +101,45 @@ export function AlertArticle({
 
   if (mode === 'full') {
     return (
-      <article className={cx(shell, 'px-5 py-6 sm:px-8 sm:py-8')}>
-        <div className="flex gap-4">
-          {icon}
-          <div className="min-w-0 flex-1">
-            {meta}
-            <Title className="mt-3 text-2xl font-bold leading-tight tracking-tight sm:text-3xl">
-              {alert.title}
-            </Title>
+      <div className="@container">
+        <article className={cx(shell, 'px-5 py-6 @xl:px-8 @xl:py-8')}>
+          <div className="flex gap-4">
+            {icon}
+            <div className="min-w-0 flex-1">
+              {meta}
+              <Title className="mt-3 text-2xl font-bold leading-tight tracking-tight @xl:text-3xl">
+                {alert.title}
+              </Title>
+            </div>
           </div>
-        </div>
-        {body}
-      </article>
+          {body}
+        </article>
+      </div>
     );
   }
 
   return (
-    <article className={cx(shell, 'transition-shadow hover:shadow-raised')}>
-      <details className="group">
-        <summary className="flex cursor-pointer list-none gap-4 px-5 py-5 sm:px-6 [&::-webkit-details-marker]:hidden">
-          {icon}
-          <div className="min-w-0 flex-1">
-            {meta}
-            <h3 className="mt-2 text-xl font-bold leading-snug">{alert.title}</h3>
-            <p className="mt-1.5 text-base text-muted group-open:hidden">
-              {truncate(alert.bodyText, 180)}
-            </p>
-            <span className="mt-3 inline-flex items-center gap-1.5 font-semibold text-brand">
-              <span className="group-open:hidden">Read more</span>
-              <span className="hidden group-open:inline">Show less</span>
-              <ChevronDownIcon className="size-5 transition-transform group-open:rotate-180" />
-            </span>
-          </div>
-        </summary>
-        <div className="px-5 pb-5 sm:pl-[5.5rem] sm:pr-6">{body}</div>
-      </details>
-    </article>
+    <div className="@container">
+      <article className={cx(shell, 'transition-shadow hover:shadow-raised')}>
+        <details className="group">
+          <summary className="flex cursor-pointer list-none gap-4 px-5 py-5 @xl:px-6 [&::-webkit-details-marker]:hidden">
+            {icon}
+            <div className="min-w-0 flex-1">
+              {meta}
+              <h3 className="mt-2 text-xl font-bold leading-snug">{alert.title}</h3>
+              <p className="mt-1.5 text-base text-muted group-open:hidden">
+                {truncate(alert.bodyText, 180)}
+              </p>
+              <span className="mt-3 inline-flex items-center gap-1.5 font-semibold text-brand">
+                <span className="group-open:hidden">Read more</span>
+                <span className="hidden group-open:inline">Show less</span>
+                <ChevronDownIcon className="size-5 transition-transform group-open:rotate-180" />
+              </span>
+            </div>
+          </summary>
+          <div className="px-5 pb-5 @xl:pl-[5.5rem] @xl:pr-6">{body}</div>
+        </details>
+      </article>
+    </div>
   );
 }

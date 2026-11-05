@@ -25,6 +25,7 @@ async function NewAlert() {
     <ComposeForm
       authorName={user.name}
       categories={categories}
+      now={new Date().toISOString()}
       initial={{
         title: '',
         bodyHtml: '',
