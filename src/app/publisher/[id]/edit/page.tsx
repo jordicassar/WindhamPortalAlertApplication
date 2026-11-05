@@ -35,6 +35,7 @@ async function EditAlert({ params }: Pick<PageProps<'/publisher/[id]/edit'>, 'pa
     <ComposeForm
       authorName={user.name}
       categories={categories}
+      now={new Date().toISOString()}
       initial={{
         id: alert.id,
         title: alert.title,
