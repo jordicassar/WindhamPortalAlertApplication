@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 import { AlertArticle } from '@/components/alert-article';
+import { AlertMap } from '@/components/alert-map';
 import { ArrowLeftIcon, BellIcon } from '@/components/icons';
 import { btn, card } from '@/components/ui';
 import { truncate } from '@/lib/format';
@@ -47,5 +48,17 @@ async function AlertContent({ params }: Pick<PageProps<'/alerts/[id]'>, 'params'
   // getPublicAlert is cached, so repeat visits from a shared link don't hit the database.
   const alert = await getPublicAlert((await params).id);
   if (!alert) notFound();
-  return <AlertArticle alert={alert} mode="full" titleAs="h1" />;
+  return (
+    <>
+      <AlertArticle alert={alert} mode="full" titleAs="h1" />
+      {alert.location && (
+        <AlertMap
+          alerts={[{ ...alert, location: alert.location }]}
+          label={`Map showing ${alert.location.name}`}
+          linkPins={false}
+          className="mt-4 h-72"
+        />
+      )}
+    </>
+  );
 }

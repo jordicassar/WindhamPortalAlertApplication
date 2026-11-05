@@ -3,6 +3,7 @@
 import { useActionState, useState } from 'react';
 import { createCategory, createStaff } from '@/app/actions/admin';
 import { approveAlert, rejectAlert } from '@/app/actions/alerts';
+import { PasswordInput } from '@/components/password-input';
 import { SubmitButton } from '@/components/submit-button';
 import { btn, card, input, Notice } from '@/components/ui';
 
@@ -82,15 +83,14 @@ export function StaffForm() {
         <option value="PUBLISHER">Publisher</option>
         <option value="ADMIN">Administrator</option>
       </select>
-      <input
+      <PasswordInput
         name="password"
-        type="password"
         placeholder="Temporary password (12+ characters)"
         aria-label="Temporary password"
         autoComplete="new-password"
         minLength={12}
         required
-        className={`${input} sm:col-span-2`}
+        className="sm:col-span-2"
       />
       {state.error && (
         <div className="sm:col-span-2">

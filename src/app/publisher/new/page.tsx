@@ -34,6 +34,7 @@ async function NewAlert() {
         severity: 'INFO',
         publishAt: null,
         expiresAt: null,
+        location: null,
         reviewNote: null,
       }}
     />

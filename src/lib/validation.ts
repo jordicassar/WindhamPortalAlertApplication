@@ -1,13 +1,11 @@
 import { z } from 'zod';
 import { ALERT_ICON_IDS } from './alert-icons';
 import { fromEasternInput } from './format';
-
-/** Input schemas shared by server actions. Never trust what the browser sends. */
+import { inLocationBounds } from './map';
 
 const trimmed = (max: number) => z.string().trim().max(max);
 const emailField = z.string().trim().toLowerCase().pipe(z.email('Enter a valid email address.'));
 
-/** Optional datetime-local value, always interpreted as Eastern time. Empty becomes null. */
 const easternDateTime = (message: string) =>
   z
     .string()
@@ -15,28 +13,54 @@ const easternDateTime = (message: string) =>
     .refine((v) => !v || fromEasternInput(v) !== null, message)
     .transform((v) => (v ? fromEasternInput(v) : null));
 
+const coordinate = z
+  .string()
+  .optional()
+  .transform((v) => (v ? Number(v) : null))
+  .refine((v) => v === null || Number.isFinite(v), 'The map location is not valid.');
+
 export const loginSchema = z.object({
   email: emailField,
   password: z.string().min(1, 'Enter your password.').max(200),
 });
 
-export const alertSchema = z.object({
-  id: z
-    .cuid()
-    .optional()
-    .or(z.literal('').transform(() => undefined)),
-  title: trimmed(120).min(1, 'Add a title.'),
-  bodyHtml: z.string().max(200_000, 'The message is too long.'),
-  categoryId: z.cuid('Choose a category.'),
-  iconId: z
-    .union([z.enum(ALERT_ICON_IDS), z.literal('')])
-    .optional()
-    .transform((value) => value || null),
-  severity: z.enum(['INFO', 'ADVISORY', 'EMERGENCY']),
-  publishAt: easternDateTime('Enter a valid publish time.'),
-  expiresAt: easternDateTime('Enter a valid expiry time.'),
-  intent: z.enum(['draft', 'submit']),
-});
+export const alertSchema = z
+  .object({
+    id: z
+      .cuid()
+      .optional()
+      .or(z.literal('').transform(() => undefined)),
+    title: trimmed(120).min(1, 'Add a title.'),
+    bodyHtml: z.string().max(200_000, 'The message is too long.'),
+    categoryId: z.cuid('Choose a category.'),
+    iconId: z
+      .union([z.enum(ALERT_ICON_IDS), z.literal('')])
+      .optional()
+      .transform((value) => value || null),
+    severity: z.enum(['INFO', 'ADVISORY', 'EMERGENCY']),
+    publishAt: easternDateTime('Enter a valid publish time.'),
+    expiresAt: easternDateTime('Enter a valid expiry time.'),
+    latitude: coordinate,
+    longitude: coordinate,
+    locationName: trimmed(120)
+      .optional()
+      .transform((v) => v || null),
+    intent: z.enum(['draft', 'submit']),
+  })
+  .superRefine((a, ctx) => {
+    if ((a.latitude === null) !== (a.longitude === null))
+      ctx.addIssue({ code: 'custom', message: 'The map location is not valid.' });
+    else if (a.latitude !== null && a.longitude !== null) {
+      if (!inLocationBounds(a.latitude, a.longitude))
+        ctx.addIssue({ code: 'custom', message: 'Pick a location in or near Windham.' });
+      // The name is what screen reader users and the list view get instead of the map.
+      if (!a.locationName)
+        ctx.addIssue({
+          code: 'custom',
+          message: 'Describe the location in words, e.g. "Main St at Route 6".',
+        });
+    }
+  });
 
 export const staffSchema = z.object({
   name: trimmed(80).min(1, 'Enter a name.'),

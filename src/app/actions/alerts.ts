@@ -48,6 +48,9 @@ export async function saveAlert(_prev: ActionState, formData: FormData): Promise
     severity: fields.severity,
     publishAt: fields.publishAt,
     expiresAt: fields.expiresAt,
+    latitude: fields.latitude,
+    longitude: fields.longitude,
+    locationName: fields.latitude === null ? null : fields.locationName,
     status: submit ? ('PENDING' as const) : ('DRAFT' as const),
     reviewNote: null,
   };

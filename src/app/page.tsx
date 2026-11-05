@@ -12,6 +12,9 @@ import { getCategories, getPublicFeed } from '@/lib/public-data';
 export default async function HomePage() {
   const [{ live, past }, categories] = await Promise.all([getPublicFeed(), getCategories()]);
   const emergencies = live.filter((a) => a.severity === 'EMERGENCY');
+  // One banner at a time: the newest emergency (the feed is newest first). Any others are
+  // listed first in the alerts below.
+  const banner = emergencies[0];
 
   return (
     <>
@@ -39,32 +42,27 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {emergencies.length > 0 && (
-        <div className="mb-8 grid gap-3">
-          {emergencies.map((a) => (
-            <div
-              key={a.id}
-              role="alert"
-              className="flex flex-wrap items-center gap-4 rounded-2xl bg-emergency-strong px-5 py-4 text-white shadow-raised sm:flex-nowrap"
-            >
-              <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-white/15">
-                <SirenIcon className="size-7" />
-              </span>
-              <div className="min-w-0 flex-1 basis-52">
-                <p className="text-sm font-bold uppercase tracking-wider text-white/85">
-                  Emergency alert
-                </p>
-                <p className="text-lg font-bold leading-snug sm:text-xl">{a.title}</p>
-              </div>
-              <Link
-                href={`/alerts/${a.id}`}
-                className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-white px-4 py-2 text-base font-bold text-emergency-strong hover:bg-white/90"
-              >
-                Read the alert
-                <ArrowRightIcon className="size-5" />
-              </Link>
-            </div>
-          ))}
+      {banner && (
+        <div
+          role="alert"
+          className="mb-8 flex flex-wrap items-center gap-4 rounded-2xl bg-emergency-strong px-5 py-4 text-white shadow-raised sm:flex-nowrap"
+        >
+          <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-white/15">
+            <SirenIcon className="size-7" />
+          </span>
+          <div className="min-w-0 flex-1 basis-52">
+            <p className="text-sm font-bold uppercase tracking-wider text-white/85">
+              Emergency alert
+            </p>
+            <p className="text-lg font-bold leading-snug sm:text-xl">{banner.title}</p>
+          </div>
+          <Link
+            href={`/alerts/${banner.id}`}
+            className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-white px-4 py-2 text-base font-bold text-emergency-strong hover:bg-white/90"
+          >
+            Read the alert
+            <ArrowRightIcon className="size-5" />
+          </Link>
         </div>
       )}
 

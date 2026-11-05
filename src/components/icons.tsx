@@ -139,6 +139,32 @@ export function ClockIcon(props: IconProps) {
   );
 }
 
+export function MapPinIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+      <circle cx="12" cy="10" r="3" />
+    </Svg>
+  );
+}
+
+export function MapIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3Z" />
+      <path d="M9 3v15M15 6v15" />
+    </Svg>
+  );
+}
+
+export function ListIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" />
+    </Svg>
+  );
+}
+
 export function TagIcon(props: IconProps) {
   return (
     <Svg {...props}>
@@ -162,6 +188,26 @@ export function UserIcon(props: IconProps) {
     <Svg {...props}>
       <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
       <circle cx="12" cy="7" r="4" />
+    </Svg>
+  );
+}
+
+export function EyeIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M2.06 12.35a1 1 0 0 1 0-.7 10.75 10.75 0 0 1 19.88 0 1 1 0 0 1 0 .7 10.75 10.75 0 0 1-19.88 0" />
+      <circle cx="12" cy="12" r="3" />
+    </Svg>
+  );
+}
+
+export function EyeOffIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M10.73 5.08a10.74 10.74 0 0 1 11.2 6.57 1 1 0 0 1 0 .7 10.75 10.75 0 0 1-1.44 2.49" />
+      <path d="M14.08 14.16a3 3 0 0 1-4.24-4.24" />
+      <path d="M17.48 17.5a10.75 10.75 0 0 1-15.42-5.15 1 1 0 0 1 0-.7 10.75 10.75 0 0 1 4.45-5.14" />
+      <path d="m2 2 20 20" />
     </Svg>
   );
 }

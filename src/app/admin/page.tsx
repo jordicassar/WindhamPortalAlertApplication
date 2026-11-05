@@ -27,6 +27,7 @@ import {
 import { requirePageUser } from '@/lib/dal';
 import { db } from '@/lib/db';
 import { formatDateTime } from '@/lib/format';
+import { toLocation } from '@/lib/map';
 import { alertHtmlToText, sanitizeAlertHtml } from '@/lib/sanitize';
 import { CategoryForm, ReviewActions, StaffForm } from './admin-forms';
 
@@ -180,6 +181,7 @@ async function Queue() {
                 authorName: a.author.name,
                 publishedAt: (a.publishAt ?? a.updatedAt).toISOString(),
                 expiresAt: a.expiresAt?.toISOString() ?? null,
+                location: toLocation(a),
               }}
             />
             <ReviewActions alertId={a.id} scheduled={!!a.publishAt && a.publishAt > new Date()} />

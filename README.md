@@ -16,11 +16,11 @@ town staff, approved by an administrator, and published to the public site and s
 
 ## What it does
 
-| Who                                | Can                                                                                                                                                                            |
-| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Residents** (no account)         | Read current and past alerts, filter by topic and severity, search, open a shareable link for any alert, subscribe by email or text, unsubscribe                               |
-| **Publishers** (town staff)        | Write alerts with a rich-text editor (bold, headings, lists, **hyperlinks, photos**), preview, save drafts, schedule a publish time, submit for approval, fix alerts sent back |
-| **Admins** (Town Manager's office) | Approve or send back alerts, archive alerts, manage staff accounts and categories, view the audit log                                                                          |
+| Who                                | Can                                                                                                                                                                                                     |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Residents** (no account)         | Read current and past alerts, filter by topic and severity, search, see alerts on a map, open a shareable link for any alert, subscribe by email or text, unsubscribe                                   |
+| **Publishers** (town staff)        | Write alerts with a rich-text editor (bold, headings, lists, **hyperlinks, photos**), preview, save drafts, pin a location on a map, schedule a publish time, submit for approval, fix alerts sent back |
+| **Admins** (Town Manager's office) | Approve or send back alerts, archive alerts, manage staff accounts and categories, view the audit log                                                                                                   |
 
 Emergency alerts appear as a red banner on every resident page and go to every subscriber.
 All times are shown and entered in Eastern time (America/New_York).
@@ -31,6 +31,7 @@ All times are shown and entered in Eastern time (America/New_York).
 - **Tailwind CSS 4** for styling
 - **PostgreSQL** with **Prisma 7** (Neon Database across development, staging, and production environments)
 - **Tiptap** rich-text editor
+- **MapLibre GL** maps with [OpenFreeMap](https://openfreemap.org) tiles (see [Maps](#maps))
 - Signed-cookie staff sessions (`jose`) with bcrypt-hashed passwords
 - `sanitize-html` allowlist for alert HTML; `zod` for validating every form
 
@@ -217,6 +218,28 @@ the database:
 - **Notification outbox.** Approving an alert writes a `Dispatch` row instead of sending messages
   inline. A background worker (next step) fans it out in batches, so publishing stays instant
   whether there are 10 subscribers or 10,000.
+- **Map tiles come from OpenFreeMap's CDN,** not from this app, and the map's code only
+  downloads when a resident switches to the map view.
+
+## Maps
+
+Publishers can pin an alert to a place; residents see pinned alerts on a map (the **Map** button
+above the alert list) and on each alert's page.
+
+- **Provider:** [MapLibre GL](https://maplibre.org) draws the map, with free vector tiles from
+  [OpenFreeMap](https://openfreemap.org) (OpenStreetMap data). No account, API key or cookies, and
+  no usage limits or bills during a traffic spike. It is a volunteer-run service with no uptime
+  guarantee; to move to a paid host (e.g. MapTiler), change `MAP_STYLE_URL` in `src/lib/map.ts`.
+- **Address search** in the editor uses OpenStreetMap's
+  [Nominatim](https://operations.osmfoundation.org/policies/nominatim/), searching one place per
+  click as its usage policy requires. Only staff use it; if it is down, they can click the map.
+- **Privacy:** residents' browsers request map tiles from OpenFreeMap, which sees their IP address
+  like any website would. Nothing else about the resident is shared.
+- **Accessibility:** every pinned alert has its location in words (required in the editor). It is
+  shown on the alert and listed under the map, so nobody needs the map itself. The list stays
+  the default view.
+- Locations must be within roughly 25 miles of Windham (`LOCATION_BOUNDS`), which catches a pin
+  dropped in the wrong place.
 
 ## Before production
 
@@ -230,7 +253,8 @@ These are known gaps, tracked for the Requirements group's security and hosting 
 - [ ] **Staff sign-in hardening:** password reset, forced change of temporary passwords, and ideally
       town single sign-on (e.g. Microsoft Entra ID) with MFA
 - [ ] **Image storage:** move photos from Postgres to object storage (Vercel Blob or S3)
-- [ ] **Content Security Policy** header
+- [ ] **Content Security Policy** header (allow `tiles.openfreemap.org` for the map and
+      `nominatim.openstreetmap.org` for the editor's address search)
 - [ ] **Load test** the public page (e.g. k6) against the sandbox
 - [ ] **Accessibility audit** (WCAG 2.1 AA) and automated tests
 

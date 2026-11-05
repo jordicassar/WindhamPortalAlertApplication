@@ -99,6 +99,43 @@ describe('alertSchema', () => {
     expect(badPublish.error?.issues[0].message).toBe('Enter a valid publish time.');
   });
 
+  it('stores no location when the map was left empty', () => {
+    const result = alertSchema.safeParse(alert({ latitude: '', longitude: '', locationName: '' }));
+    expect(result.data).toMatchObject({ latitude: null, longitude: null, locationName: null });
+  });
+
+  it('accepts a named location in Windham', () => {
+    const result = alertSchema.safeParse(
+      alert({ latitude: '41.710600', longitude: '-72.208100', locationName: ' Main St ' }),
+    );
+    expect(result.data).toMatchObject({
+      latitude: 41.7106,
+      longitude: -72.2081,
+      locationName: 'Main St',
+    });
+  });
+
+  it('requires the location to be described in words', () => {
+    const result = alertSchema.safeParse(
+      alert({ latitude: '41.7106', longitude: '-72.2081', locationName: '  ' }),
+    );
+    expect(result.error?.issues[0].message).toMatch(/Describe the location in words/);
+  });
+
+  it('rejects locations far from Windham and half-set coordinates', () => {
+    const boston = alert({ latitude: '42.3601', longitude: '-71.0589', locationName: 'Boston' });
+    expect(alertSchema.safeParse(boston).error?.issues[0].message).toBe(
+      'Pick a location in or near Windham.',
+    );
+    expect(alertSchema.safeParse(alert({ latitude: '41.7', locationName: 'x' })).success).toBe(
+      false,
+    );
+    expect(
+      alertSchema.safeParse(alert({ latitude: 'abc', longitude: '-72.2', locationName: 'x' }))
+        .success,
+    ).toBe(false);
+  });
+
   it('rejects titles over 120 characters', () => {
     expect(alertSchema.safeParse(alert({ title: 'x'.repeat(121) })).success).toBe(false);
   });

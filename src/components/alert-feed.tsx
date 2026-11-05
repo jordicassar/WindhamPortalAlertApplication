@@ -1,16 +1,20 @@
 'use client';
 
+import dynamic from 'next/dynamic';
+import Link from 'next/link';
 import { useMemo, useState, useSyncExternalStore } from 'react';
 import type { Severity } from '@/generated/prisma/enums';
 import type { PublicAlert } from '@/lib/public-data';
 import { AlertArticle } from './alert-article';
-import { SearchIcon } from './icons';
+import type { MapAlert } from './alert-map';
+import { ListIcon, MapIcon, MapPinIcon, SearchIcon } from './icons';
 import { card, cx, EmptyState, input } from './ui';
 
-/**
- * Filtering happens in the browser on the cached list, so searching and
- * filtering never reach the server. That keeps the page cacheable for everyone.
- */
+const AlertMap = dynamic(() => import('./alert-map').then((m) => m.AlertMap), {
+  ssr: false,
+  loading: () => <div className="h-[26rem] rounded-2xl border border-border bg-surface-2" />,
+});
+
 export function AlertFeed({
   live,
   past,
@@ -24,6 +28,7 @@ export function AlertFeed({
   const [categoryId, setCategoryId] = useState('all');
   const [severity, setSeverity] = useState<Severity | 'all'>('all');
   const [showPast, setShowPast] = useState(false);
+  const [view, setView] = useState<'list' | 'map'>('list');
   const now = useNow();
 
   // The cached list can be up to a minute old; hide anything that expired since.
@@ -47,6 +52,11 @@ export function AlertFeed({
         return emergencyDiff || b.publishedAt.localeCompare(a.publishedAt);
       });
   }, [current, past, showPast, query, categoryId, severity]);
+
+  const located = useMemo(
+    () => visible.flatMap((a): MapAlert[] => (a.location ? [{ ...a, location: a.location }] : [])),
+    [visible],
+  );
 
   const filtered = query.trim() !== '' || categoryId !== 'all' || severity !== 'all';
   function clearFilters() {
@@ -166,32 +176,101 @@ export function AlertFeed({
         </div>
       </div>
 
-      <p className="mb-3 mt-6 text-base font-semibold text-muted" aria-live="polite">
-        {visible.length === 1 ? '1 alert' : `${visible.length} alerts`}
-        {filtered && (
-          <>
-            {' '}
-            match your filters ·{' '}
-            <button
-              type="button"
-              onClick={clearFilters}
-              className="font-semibold text-brand underline underline-offset-4"
-            >
-              Clear filters
-            </button>
-          </>
-        )}
-      </p>
-
-      <div className="grid gap-4">
-        {visible.length ? (
-          visible.map((a) => (
-            <AlertArticle key={a.id} alert={a} mode="collapsible" dimmed={!current.includes(a)} />
-          ))
-        ) : (
-          <EmptyState>No alerts match your filters.</EmptyState>
-        )}
+      <div className="mb-3 mt-6 flex flex-wrap items-center justify-between gap-3">
+        <p className="text-base font-semibold text-muted" aria-live="polite">
+          {visible.length === 1 ? '1 alert' : `${visible.length} alerts`}
+          {filtered && (
+            <>
+              {' '}
+              match your filters ·{' '}
+              <button
+                type="button"
+                onClick={clearFilters}
+                className="font-semibold text-brand underline underline-offset-4"
+              >
+                Clear filters
+              </button>
+            </>
+          )}
+        </p>
+        <div role="group" aria-label="Show alerts as" className="flex gap-1">
+          <button
+            type="button"
+            aria-pressed={view === 'list'}
+            onClick={() => setView('list')}
+            className={chip(view === 'list')}
+          >
+            <ListIcon className="size-5" />
+            List
+          </button>
+          <button
+            type="button"
+            aria-pressed={view === 'map'}
+            onClick={() => setView('map')}
+            className={chip(view === 'map')}
+          >
+            <MapIcon className="size-5" />
+            Map
+          </button>
+        </div>
       </div>
+
+      {view === 'map' ? (
+        <div className="grid gap-4">
+          <AlertMap alerts={located} label="Map of alert locations" />
+          {/* The same alerts in words, for anyone who can't see or use the map. */}
+          <div className={cx(card, 'p-4 sm:p-5')}>
+            <h3 className="font-bold">
+              {located.length === 0
+                ? 'None of these alerts has a location'
+                : located.length === 1
+                  ? '1 alert on the map'
+                  : `${located.length} alerts on the map`}
+            </h3>
+            {located.length > 0 && (
+              <ul className="mt-2 grid gap-2">
+                {located.map((a) => (
+                  <li key={a.id} className="flex gap-2">
+                    <MapPinIcon className="mt-0.5 size-5 shrink-0 text-muted" />
+                    <span>
+                      <Link
+                        href={`/alerts/${a.id}`}
+                        className="font-semibold text-brand underline underline-offset-4"
+                      >
+                        {a.title}
+                      </Link>
+                      <span className="block text-sm text-muted">{a.location.name}</span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {visible.length > located.length && (
+              <p className="mt-3 text-sm text-muted">
+                {visible.length - located.length} more{' '}
+                {visible.length - located.length === 1 ? 'alert has' : 'alerts have'} no location.{' '}
+                <button
+                  type="button"
+                  onClick={() => setView('list')}
+                  className="font-semibold text-brand underline underline-offset-4"
+                >
+                  Show the list
+                </button>
+              </p>
+            )}
+          </div>
+        </div>
+      ) : (
+        <div className="grid gap-4">
+          {visible.length ? (
+            visible.map((a) => (
+              <AlertArticle key={a.id} alert={a} mode="collapsible" dimmed={!current.includes(a)} />
+            ))
+          ) : (
+            <EmptyState>No alerts match your filters.</EmptyState>
+          )}
+        </div>
+      )}
     </section>
   );
 }

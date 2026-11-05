@@ -6,12 +6,14 @@ import { saveAlert } from '@/app/actions/alerts';
 import { AlertArticle, type AlertView } from '@/components/alert-article';
 import { AlertEditor } from '@/components/alert-editor';
 import { IconPicker } from '@/components/IconPicker';
+import { LocationPicker } from '@/components/location-picker';
 import { PhonePreview } from '@/components/phone-preview';
 import { SubmitButton } from '@/components/submit-button';
 import { btn, card, input, Notice } from '@/components/ui';
 import type { Severity } from '@/generated/prisma/enums';
 import { fromEasternInput, SEVERITY_HINT, SEVERITY_LABEL, toEasternInput } from '@/lib/format';
 import { getDefaultAlertIcon, type AlertIconId } from '@/lib/alert-icons';
+import type { AlertLocation } from '@/lib/map';
 import { alertLink, smsText } from '@/lib/sms';
 
 const TITLE_MAX = 120;
@@ -27,6 +29,7 @@ export type ComposeInitial = {
   severity: Severity;
   publishAt: string | null;
   expiresAt: string | null;
+  location: AlertLocation | null;
   reviewNote: string | null;
 };
 
@@ -50,9 +53,9 @@ export function ComposeForm({
   const [bodyText, setBodyText] = useState('');
   const [categoryId, setCategoryId] = useState(initial.categoryId);
   const [severity, setSeverity] = useState<Severity>(initial.severity);
-  // Times are entered in Eastern time regardless of the browser's zone; the server converts them.
   const [publishLocal, setPublishLocal] = useState(toEasternInput(initial.publishAt));
   const [expiresLocal, setExpiresLocal] = useState(toEasternInput(initial.expiresAt));
+  const [location, setLocation] = useState(initial.location);
   const [previewing, setPreviewing] = useState(false);
 
   const categoryName = categories.find((c) => c.id === categoryId)?.name ?? '';
@@ -68,6 +71,7 @@ export function ComposeForm({
     authorName,
     publishedAt: fromEasternInput(publishLocal)?.toISOString() ?? now,
     expiresAt: fromEasternInput(expiresLocal)?.toISOString() ?? null,
+    location,
   };
   const sms = smsText({
     severity,
@@ -183,6 +187,8 @@ export function ComposeForm({
             onTextChange={setBodyText}
           />
         </div>
+
+        <LocationPicker initial={initial.location} onChange={setLocation} />
 
         {previewing && (
           <div className="rounded-xl border-2 border-dashed border-border p-3">
