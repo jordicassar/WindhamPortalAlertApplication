@@ -1,7 +1,8 @@
 import Link from 'next/link';
 import type { Severity } from '@/generated/prisma/enums';
 import { formatDateTime, truncate } from '@/lib/format';
-import { ChevronDownIcon, ClockIcon, LinkIcon, TagIcon } from './icons';
+import type { AlertLocation } from '@/lib/map';
+import { ChevronDownIcon, ClockIcon, LinkIcon, MapPinIcon, TagIcon } from './icons';
 import { btn, cx, SEVERITY_STYLE, SeverityBadge, SeverityIcon } from './ui';
 
 const SEVERITY_BAR: Record<Severity, string> = {
@@ -13,7 +14,6 @@ const SEVERITY_BAR: Record<Severity, string> = {
 export type AlertView = {
   id: string;
   title: string;
-  /** Must already be sanitized (see src/lib/sanitize.ts). */
   bodyHtml: string;
   bodyText: string;
   severity: Severity;
@@ -21,12 +21,9 @@ export type AlertView = {
   authorName: string;
   publishedAt: string;
   expiresAt: string | null;
+  location: AlertLocation | null;
 };
 
-/**
- * An alert as residents see it. Collapsed alerts use <details> so they expand
- * without any JavaScript. Also used as the staff preview.
- */
 export function AlertArticle({
   alert,
   mode,
@@ -36,7 +33,6 @@ export function AlertArticle({
   alert: AlertView;
   mode: 'collapsible' | 'full';
   dimmed?: boolean;
-  /** Heading level of the title in full mode: h1 on the alert's own page, h2 inside staff previews. */
   titleAs?: 'h1' | 'h2';
 }) {
   const meta = (
@@ -50,6 +46,12 @@ export function AlertArticle({
         <ClockIcon className="size-4" />
         {formatDateTime(alert.publishedAt)}
       </time>
+      {alert.location && (
+        <span className="inline-flex items-center gap-1.5">
+          <MapPinIcon className="size-4" title="Location" />
+          {alert.location.name}
+        </span>
+      )}
       {dimmed && (
         <span className="rounded-full bg-surface-2 px-2.5 py-0.5 font-semibold">Past alert</span>
       )}

@@ -4,6 +4,7 @@ import { Suspense } from 'react';
 import { PageTitle } from '@/components/ui';
 import { requirePageUser } from '@/lib/dal';
 import { db } from '@/lib/db';
+import { toLocation } from '@/lib/map';
 import { getCategories } from '@/lib/public-data';
 import { ComposeForm } from '../../compose-form';
 
@@ -43,6 +44,7 @@ async function EditAlert({ params }: Pick<PageProps<'/publisher/[id]/edit'>, 'pa
         severity: alert.severity,
         publishAt: alert.publishAt?.toISOString() ?? null,
         expiresAt: alert.expiresAt?.toISOString() ?? null,
+        location: toLocation(alert),
         reviewNote: alert.status === 'REJECTED' ? alert.reviewNote : null,
       }}
     />

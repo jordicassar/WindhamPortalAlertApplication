@@ -1,6 +1,7 @@
 import 'server-only';
 import { cacheLife, cacheTag } from 'next/cache';
 import { db } from './db';
+import { toLocation, type AlertLocation } from './map';
 import { alertHtmlToText, sanitizeAlertHtml } from './sanitize';
 
 /**
@@ -29,6 +30,7 @@ export type PublicAlert = {
   authorName: string;
   publishedAt: string;
   expiresAt: string | null;
+  location: AlertLocation | null;
 };
 
 const publicSelect = {
@@ -38,6 +40,9 @@ const publicSelect = {
   severity: true,
   publishedAt: true,
   expiresAt: true,
+  latitude: true,
+  longitude: true,
+  locationName: true,
   categoryId: true,
   category: { select: { name: true } },
   author: { select: { name: true } },
@@ -50,6 +55,9 @@ type Row = {
   severity: PublicAlert['severity'];
   publishedAt: Date | null;
   expiresAt: Date | null;
+  latitude: number | null;
+  longitude: number | null;
+  locationName: string | null;
   categoryId: string;
   category: { name: string };
   author: { name: string };
@@ -68,6 +76,7 @@ function toPublic(row: Row): PublicAlert {
     authorName: row.author.name,
     publishedAt: (row.publishedAt ?? new Date(0)).toISOString(),
     expiresAt: row.expiresAt?.toISOString() ?? null,
+    location: toLocation(row),
   };
 }
 

@@ -76,6 +76,12 @@ model Alert {
   publishAt   DateTime?
   expiresAt   DateTime?
 
+  /// Optional point shown on the residents' map. Set together with locationName.
+  latitude     Float?
+  longitude    Float?
+  /// Plain-language place, e.g. "Main St at Route 6". Read out in place of the map.
+  locationName String?  @db.VarChar(120)
+
   categoryId   String
   category     Category @relation(fields: [categoryId], references: [id])
   authorId     String

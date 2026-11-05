@@ -3,6 +3,7 @@
 import { useActionState } from 'react';
 import { login } from '@/app/actions/auth';
 import { HoneypotField } from '@/components/honeypot-field';
+import { PasswordInput } from '@/components/password-input';
 import { SubmitButton } from '@/components/submit-button';
 import { card, input, label, Notice } from '@/components/ui';
 
@@ -14,16 +15,10 @@ export function LoginForm() {
         Email
         <input name="email" type="email" autoComplete="username" required className={input} />
       </label>
-      <label className={label}>
-        Password
-        <input
-          name="password"
-          type="password"
-          autoComplete="current-password"
-          required
-          className={input}
-        />
-      </label>
+      <div className={label}>
+        <label htmlFor="password">Password</label>
+        <PasswordInput id="password" name="password" autoComplete="current-password" required />
+      </div>
       <HoneypotField />
       {state.error && <Notice kind="error">{state.error}</Notice>}
       <SubmitButton pendingText="Signing in…" className="w-full py-3 text-lg">

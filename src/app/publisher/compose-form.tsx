@@ -5,10 +5,12 @@ import { useActionState, useState } from 'react';
 import { saveAlert } from '@/app/actions/alerts';
 import { AlertArticle } from '@/components/alert-article';
 import { AlertEditor } from '@/components/alert-editor';
+import { LocationPicker } from '@/components/location-picker';
 import { SubmitButton } from '@/components/submit-button';
 import { btn, card, input, Notice } from '@/components/ui';
 import type { Severity } from '@/generated/prisma/enums';
 import { fromEasternInput, SEVERITY_HINT, SEVERITY_LABEL, toEasternInput } from '@/lib/format';
+import type { AlertLocation } from '@/lib/map';
 
 const TITLE_MAX = 120;
 
@@ -20,6 +22,7 @@ export type ComposeInitial = {
   severity: Severity;
   publishAt: string | null;
   expiresAt: string | null;
+  location: AlertLocation | null;
   reviewNote: string | null;
 };
 
@@ -37,9 +40,9 @@ export function ComposeForm({
   const [bodyHtml, setBodyHtml] = useState(initial.bodyHtml);
   const [categoryId, setCategoryId] = useState(initial.categoryId);
   const [severity, setSeverity] = useState<Severity>(initial.severity);
-  // Times are entered in Eastern time regardless of the browser's zone; the server converts them.
   const [publishLocal, setPublishLocal] = useState(toEasternInput(initial.publishAt));
   const [expiresLocal, setExpiresLocal] = useState(toEasternInput(initial.expiresAt));
+  const [location, setLocation] = useState(initial.location);
   const [previewing, setPreviewing] = useState(false);
 
   return (
@@ -138,6 +141,8 @@ export function ComposeForm({
         <AlertEditor initialHtml={initial.bodyHtml} onChange={setBodyHtml} />
       </div>
 
+      <LocationPicker initial={initial.location} onChange={setLocation} />
+
       {previewing && (
         <div className="rounded-xl border-2 border-dashed border-border p-3">
           <p className="mb-2 text-xs uppercase tracking-wider text-muted">
@@ -155,6 +160,7 @@ export function ComposeForm({
               authorName,
               publishedAt: (fromEasternInput(publishLocal) ?? new Date()).toISOString(),
               expiresAt: fromEasternInput(expiresLocal)?.toISOString() ?? null,
+              location,
             }}
           />
         </div>

@@ -6,7 +6,6 @@ import { SubmitButton } from '@/components/submit-button';
 import {
   btn,
   EmptyState,
-  Notice,
   PageTitle,
   PublishTime,
   SeverityBadge,
@@ -15,6 +14,7 @@ import {
 import { requirePageUser } from '@/lib/dal';
 import { db } from '@/lib/db';
 import { formatDateTime } from '@/lib/format';
+import { SavedNotice } from './saved-notice';
 
 export const metadata: Metadata = { title: 'Publisher', robots: { index: false } };
 
@@ -51,11 +51,9 @@ async function PublisherContent({ searchParams }: Pick<PageProps<'/publisher'>, 
         Signed in as {user.name} ({user.department}). Alerts you submit are reviewed by an
         administrator before residents see them.
       </p>
-      {saved && (
+      {typeof saved === 'string' && (
         <div className="mb-4">
-          <Notice kind="ok">
-            {saved === 'submitted' ? 'Submitted for approval.' : 'Draft saved.'}
-          </Notice>
+          <SavedNotice saved={saved} />
         </div>
       )}
 

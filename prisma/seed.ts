@@ -61,7 +61,11 @@ async function main() {
     await db.user.upsert({ where: { email: s.email }, update: {}, create: { ...s, passwordHash } });
   }
 
-  if ((await db.alert.count()) > 0) {
+  // Checked before adding the map alerts, so a fresh database still gets the samples below.
+  const hasAlerts = (await db.alert.count()) > 0;
+  await seedMapAlerts();
+
+  if (hasAlerts) {
     console.log('Alerts already exist; skipping sample alerts.');
     return;
   }
@@ -146,6 +150,61 @@ async function main() {
     data: { actorLabel: 'System', action: 'Demo data loaded', detail: 'Seeded sample alerts' },
   });
   console.log('Seeded demo data.');
+}
+
+/**
+ * Live alerts pinned on the residents' map. Added to existing databases too (each one
+ * only if no alert has its title yet), so development and staging always have pins.
+ */
+const MAP_ALERTS = [
+  {
+    title: 'DEMO: Gas leak, avoid the area',
+    category: 'Public Safety',
+    severity: 'EMERGENCY',
+    locationName: 'Route 6 at Route 203, North Windham',
+    latitude: 41.7396,
+    longitude: -72.1428,
+  },
+  {
+    title: 'DEMO: Water main break',
+    category: 'Water & Utilities',
+    severity: 'ADVISORY',
+    locationName: 'Main St at Church St, Willimantic',
+    latitude: 41.7106,
+    longitude: -72.2081,
+  },
+  {
+    title: 'DEMO: Road closed for repairs',
+    category: 'Roads & Traffic',
+    severity: 'INFO',
+    locationName: 'North Rd near Windham Center School',
+    latitude: 41.7019,
+    longitude: -72.1615,
+  },
+] as const;
+
+async function seedMapAlerts() {
+  const [author, admin] = await Promise.all([
+    db.user.findUniqueOrThrow({ where: { email: 'publicworks@windham.example' } }),
+    db.user.findUniqueOrThrow({ where: { email: 'admin@windham.example' } }),
+  ]);
+  let added = 0;
+  for (const { category, ...alert } of MAP_ALERTS) {
+    if (await db.alert.findFirst({ where: { title: alert.title } })) continue;
+    await db.alert.create({
+      data: {
+        ...alert,
+        bodyHtml: '<p>Demo alert for the map. Not a real event.</p>',
+        status: 'PUBLISHED',
+        publishedAt: new Date(),
+        category: { connect: { name: category } },
+        author: { connect: { id: author.id } },
+        reviewedBy: { connect: { id: admin.id } },
+      },
+    });
+    added++;
+  }
+  if (added) console.log(`Added ${added} demo alert(s) with map locations.`);
 }
 
 main()
