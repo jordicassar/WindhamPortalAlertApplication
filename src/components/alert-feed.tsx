@@ -3,9 +3,11 @@
 import { useMemo, useState, useSyncExternalStore } from 'react';
 import type { Severity } from '@/generated/prisma/enums';
 import type { PublicAlert } from '@/lib/public-data';
+import { translateCategory } from '@/lib/i18n';
 import { AlertArticle } from './alert-article';
 import { SearchIcon } from './icons';
 import { card, cx, EmptyState, input } from './ui';
+import { useLanguage } from './language-provider';
 
 /**
  * Filtering happens in the browser on the cached list, so searching and
@@ -25,6 +27,7 @@ export function AlertFeed({
   const [severity, setSeverity] = useState<Severity | 'all'>('all');
   const [showPast, setShowPast] = useState(false);
   const now = useNow();
+  const { language, t } = useLanguage();
 
   // The cached list can be up to a minute old; hide anything that expired since.
   const current = useMemo(
@@ -64,10 +67,10 @@ export function AlertFeed({
     );
 
   const severities: { value: Severity | 'all'; label: string; dot?: string }[] = [
-    { value: 'all', label: 'All' },
-    { value: 'EMERGENCY', label: 'Emergency', dot: 'bg-emergency' },
-    { value: 'ADVISORY', label: 'Advisory', dot: 'bg-advisory' },
-    { value: 'INFO', label: 'Information', dot: 'bg-info' },
+    { value: 'all', label: t('all') },
+    { value: 'EMERGENCY', label: t('emergency'), dot: 'bg-emergency' },
+    { value: 'ADVISORY', label: t('advisory'), dot: 'bg-advisory' },
+    { value: 'INFO', label: t('information'), dot: 'bg-info' },
   ];
 
   return (
@@ -78,9 +81,9 @@ export function AlertFeed({
             id="feed-heading"
             className="text-2xl font-bold tracking-tight text-accent sm:text-3xl"
           >
-            Community alerts
+            {t('communityAlerts')}
           </h2>
-          <p className="mt-1 text-muted">Tap an alert to read the full notice.</p>
+          <p className="mt-1 text-muted">{t('tapToRead')}</p>
         </div>
         <label className="inline-flex min-h-11 cursor-pointer items-center gap-3 text-base font-semibold">
           <input
@@ -94,7 +97,7 @@ export function AlertFeed({
             aria-hidden
             className="relative h-7 w-12 rounded-full bg-border transition-colors after:absolute after:left-1 after:top-1 after:size-5 after:rounded-full after:bg-white after:shadow after:transition-transform peer-checked:bg-brand peer-checked:after:translate-x-5 peer-focus-visible:outline-3 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[var(--ring)]"
           />
-          Show past alerts
+          {t('showPastAlerts')}
         </label>
       </div>
 
@@ -105,13 +108,13 @@ export function AlertFeed({
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search alerts, e.g. parking or school"
-            aria-label="Search alerts"
+            placeholder={t('searchAlertsPlaceholder')}
+            aria-label={t('searchAlertsLabel')}
             className={cx(input, 'pl-12')}
           />
         </div>
 
-        <div role="group" aria-label="Filter by severity" className="flex flex-wrap gap-2">
+        <div role="group" aria-label={t('filterBySeverity')} className="flex flex-wrap gap-2">
           {severities.map((s) => (
             <button
               key={s.value}
@@ -140,7 +143,7 @@ export function AlertFeed({
             id="topic-filter"
             className="mb-2 text-sm font-bold uppercase tracking-wider text-muted"
           >
-            Topic
+            {t('topic')}
           </p>
           <div role="group" aria-labelledby="topic-filter" className="flex flex-wrap gap-2">
             <button
@@ -149,7 +152,7 @@ export function AlertFeed({
               onClick={() => setCategoryId('all')}
               className={chip(categoryId === 'all')}
             >
-              All topics
+              {t('allTopics')}
             </button>
             {categories.map((c) => (
               <button
@@ -159,7 +162,7 @@ export function AlertFeed({
                 onClick={() => setCategoryId(c.id)}
                 className={chip(categoryId === c.id)}
               >
-                {c.name}
+                {translateCategory(c.name, language)}
               </button>
             ))}
           </div>
@@ -167,17 +170,19 @@ export function AlertFeed({
       </div>
 
       <p className="mb-3 mt-6 text-base font-semibold text-muted" aria-live="polite">
-        {visible.length === 1 ? '1 alert' : `${visible.length} alerts`}
+        {visible.length === 1
+          ? t('oneAlert')
+          : t('manyAlerts').replace('{count}', String(visible.length))}
         {filtered && (
           <>
             {' '}
-            match your filters ·{' '}
+            {t('matchFilters')} ·{' '}
             <button
               type="button"
               onClick={clearFilters}
               className="font-semibold text-brand underline underline-offset-4"
             >
-              Clear filters
+              {t('clearFilters')}
             </button>
           </>
         )}
@@ -189,7 +194,7 @@ export function AlertFeed({
             <AlertArticle key={a.id} alert={a} mode="collapsible" dimmed={!current.includes(a)} />
           ))
         ) : (
-          <EmptyState>No alerts match your filters.</EmptyState>
+          <EmptyState>{t(filtered ? 'noAlertsMatch' : 'noAlertsYet')}</EmptyState>
         )}
       </div>
     </section>

@@ -1,4 +1,4 @@
-name: Publish scheduled alerts
+﻿name: Publish scheduled alerts
 
 # Calls the portal's publish-scheduled endpoint so approved alerts with a future
 # "Publish at" time go live (see src/app/api/cron/publish-scheduled/route.ts).
@@ -43,7 +43,7 @@ jobs:
           fi
           curl --fail-with-body --silent --show-error --max-time 60 \
             --retry 2 --retry-all-errors \
-            --header "Authorization: Bearer $CRON_SECRET" "$URL"
+            --header "Authorization: $CRON_SECRET" "$URL"
 
       - name: Call the endpoint (staging)
         if: matrix.environment == 'staging'
@@ -57,4 +57,4 @@ jobs:
           fi
           curl --fail-with-body --silent --show-error --max-time 60 \
             --retry 2 --retry-all-errors \
-            --header "Authorization: Bearer $CRON_SECRET" "$URL"
+            --header "Authorization: $CRON_SECRET" "$URL"

@@ -1,10 +1,14 @@
+'use client';
+
 import Link from 'next/link';
 import type { Severity } from '@/generated/prisma/enums';
 import { formatDateTime, truncate } from '@/lib/format';
 import { getDefaultAlertIcon, type AlertIconId } from '@/lib/alert-icons';
 import { AlertIconBadge } from './AlertIconBadge';
 import { ChevronDownIcon, ClockIcon, LinkIcon, TagIcon } from './icons';
-import { btn, cx, SeverityBadge } from './ui';
+import { btn, cx, SEVERITY_STYLE, SeverityIcon } from './ui';
+import { translateCategory } from '@/lib/i18n';
+import { useLanguage } from './language-provider';
 
 const SEVERITY_BAR: Record<Severity, string> = {
   INFO: 'before:bg-info',
@@ -45,34 +49,55 @@ export function AlertArticle({
   /** Heading level of the title in full mode: h1 on the alert's own page, h2 inside staff previews. */
   titleAs?: 'h1' | 'h2';
 }) {
+  const { language, t } = useLanguage();
+  const severityLabel = {
+    INFO: t('information'),
+    ADVISORY: t('advisory'),
+    EMERGENCY: t('emergency'),
+  }[alert.severity];
   const meta = (
     <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm text-muted">
-      <SeverityBadge severity={alert.severity} />
+      <span
+        className={cx(
+          'inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-0.5 text-sm font-bold',
+          SEVERITY_STYLE[alert.severity],
+        )}
+      >
+        <SeverityIcon severity={alert.severity} className="size-3.5" />
+        {severityLabel}
+      </span>
       <span className="inline-flex items-center gap-1.5">
         <TagIcon className="size-4" />
-        {alert.categoryName}
+        {translateCategory(alert.categoryName, language)}
       </span>
       <time dateTime={alert.publishedAt} className="inline-flex items-center gap-1.5">
         <ClockIcon className="size-4" />
-        {formatDateTime(alert.publishedAt)}
+        {formatDateTime(alert.publishedAt, language === 'es' ? 'es-US' : 'en-US')}
       </time>
       {dimmed && (
-        <span className="rounded-full bg-surface-2 px-2.5 py-0.5 font-semibold">Past alert</span>
+        <span className="rounded-full bg-surface-2 px-2.5 py-0.5 font-semibold">
+          {t('pastAlert')}
+        </span>
       )}
     </div>
   );
   const body = (
     <>
-      <div className="prose-alert mt-4" dangerouslySetInnerHTML={{ __html: alert.bodyHtml }} />
+      <div
+        lang="en"
+        className="prose-alert mt-4"
+        dangerouslySetInnerHTML={{ __html: alert.bodyHtml }}
+      />
       <footer className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4 text-sm text-muted">
         <span>
-          Posted by <span className="font-semibold text-text">{alert.authorName}</span>
-          {alert.expiresAt && ` · Until ${formatDateTime(alert.expiresAt)}`}
+          {t('postedBy')} <span className="font-semibold text-text">{alert.authorName}</span>
+          {alert.expiresAt &&
+            ` · ${t('until')} ${formatDateTime(alert.expiresAt, language === 'es' ? 'es-US' : 'en-US')}`}
         </span>
         {mode === 'collapsible' && (
           <Link href={`/alerts/${alert.id}`} className={btn('secondary', true)}>
             <LinkIcon className="size-4" />
-            Open or share this alert
+            {t('openOrShare')}
           </Link>
         )}
       </footer>
@@ -101,7 +126,10 @@ export function AlertArticle({
             {icon}
             <div className="min-w-0 flex-1">
               {meta}
-              <Title className="mt-3 text-2xl font-bold leading-tight tracking-tight @xl:text-3xl">
+              <Title
+                lang="en"
+                className="mt-3 text-2xl font-bold leading-tight tracking-tight @xl:text-3xl"
+              >
                 {alert.title}
               </Title>
             </div>
@@ -120,13 +148,15 @@ export function AlertArticle({
             {icon}
             <div className="min-w-0 flex-1">
               {meta}
-              <h3 className="mt-2 text-xl font-bold leading-snug">{alert.title}</h3>
-              <p className="mt-1.5 text-base text-muted group-open:hidden">
+              <h3 lang="en" className="mt-2 text-xl font-bold leading-snug">
+                {alert.title}
+              </h3>
+              <p lang="en" className="mt-1.5 text-base text-muted group-open:hidden">
                 {truncate(alert.bodyText, 180)}
               </p>
               <span className="mt-3 inline-flex items-center gap-1.5 font-semibold text-brand">
-                <span className="group-open:hidden">Read more</span>
-                <span className="hidden group-open:inline">Show less</span>
+                <span className="group-open:hidden">{t('readMore')}</span>
+                <span className="hidden group-open:inline">{t('showLess')}</span>
                 <ChevronDownIcon className="size-5 transition-transform group-open:rotate-180" />
               </span>
             </div>

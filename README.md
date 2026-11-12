@@ -18,12 +18,17 @@ town staff, approved by an administrator, and published to the public site and s
 
 | Who                                | Can                                                                                                                                                                            |
 | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Residents** (no account)         | Read current and past alerts, filter by topic and severity, search, open a shareable link for any alert, subscribe by email or text, unsubscribe                               |
+| **Residents** (no account)         | Read current and past alerts, filter by topic and severity, search, open a shareable link for any alert, switch between English and Spanish, subscribe by email or text, unsubscribe |
 | **Publishers** (town staff)        | Write alerts with a rich-text editor (bold, headings, lists, **hyperlinks, photos**), preview, save drafts, schedule a publish time, submit for approval, fix alerts sent back |
 | **Admins** (Town Manager's office) | Approve or send back alerts, archive alerts, manage staff accounts and categories, view the audit log                                                                          |
 
 Emergency alerts appear as a red banner on every resident page and go to every subscriber.
 All times are shown and entered in Eastern time (America/New_York).
+
+Resident-facing portal text is available in English and Spanish, and the language choice is
+remembered in the browser. Alert content and email/text language remain English-only until the
+requirements group decides how those will be translated. Spanish UI translations need review by a
+native speaker before launch.
 
 ## Tech stack
 

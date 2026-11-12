@@ -7,26 +7,31 @@ import { db } from '@/lib/db';
 import { clientIp, LIMITS, rateLimit, retryMessage } from '@/lib/rate-limit';
 import { verifyTurnstile } from '@/lib/turnstile';
 import { firstError, subscribeSchema, type ActionState } from '@/lib/validation';
+import { translateSubscribeMessage, type Language } from '@/lib/i18n';
 
 export type SubscribeState = ActionState & { unsubscribeToken?: string };
-
-const HUMAN_CHECK_FAILED =
-  "We couldn't confirm you're not a robot. Please complete the check above the Subscribe button and try again.";
 
 export async function subscribe(
   _prev: SubscribeState,
   formData: FormData,
 ): Promise<SubscribeState> {
+  const language: Language = formData.get('language') === 'es' ? 'es' : 'en';
+  const localized = (message: string) => translateSubscribeMessage(message, language);
   // Bot defences, cheapest first. A filled honeypot gets a normal-looking reply so
   // the bot has no signal that it was caught; nothing is saved.
-  if (isHoneypotFilled(formData)) return { message: "You're subscribed to Windham alerts." };
+  if (isHoneypotFilled(formData))
+    return { message: localized("You're subscribed to Windham alerts.") };
 
   const ip = await clientIp();
   const ipLimit = await rateLimit('subscribe-ip', ip, LIMITS.subscribeIp);
-  if (!ipLimit.ok) return { error: retryMessage(ipLimit.retryAfterSeconds) };
+  if (!ipLimit.ok) return { error: localized(retryMessage(ipLimit.retryAfterSeconds)) };
 
   if (!(await verifyTurnstile(formData.get('cf-turnstile-response'), ip))) {
-    return { error: HUMAN_CHECK_FAILED };
+    return {
+      error: localized(
+        "We couldn't confirm you're not a robot. Please complete the check above the Subscribe button and try again.",
+      ),
+    };
   }
 
   const parsed = subscribeSchema.safeParse({
@@ -37,7 +42,7 @@ export async function subscribe(
     emergencyOnly: formData.get('emergencyOnly') === 'on',
     categoryIds: formData.getAll('categoryIds').map(String),
   });
-  if (!parsed.success) return { error: firstError(parsed.error) };
+  if (!parsed.success) return { error: localized(firstError(parsed.error)) };
   const s = parsed.data;
 
   const email = s.viaEmail ? s.email : undefined;
@@ -47,7 +52,7 @@ export async function subscribe(
   for (const contact of [email, phone]) {
     if (!contact) continue;
     const contactLimit = await rateLimit('subscribe-contact', contact, LIMITS.subscribeContact);
-    if (!contactLimit.ok) return { error: retryMessage(contactLimit.retryAfterSeconds) };
+    if (!contactLimit.ok) return { error: localized(retryMessage(contactLimit.retryAfterSeconds)) };
   }
 
   const data = {
@@ -75,13 +80,15 @@ export async function subscribe(
     // The link is only shown on first sign-up so it can't be obtained by typing
     // someone else's email.
     return existing
-      ? { message: 'Your preferences were updated.' }
+      ? { message: localized('Your preferences were updated.') }
       : {
-          message: "You're subscribed to Windham alerts.",
+          message: localized("You're subscribed to Windham alerts."),
           unsubscribeToken: saved.unsubscribeToken,
         };
   } catch {
-    return { error: 'That email or phone number is already used by another subscription.' };
+    return {
+      error: localized('That email or phone number is already used by another subscription.'),
+    };
   }
 }
 

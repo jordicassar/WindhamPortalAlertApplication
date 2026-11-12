@@ -1,45 +1,20 @@
-import Image from 'next/image';
 import Link from 'next/link';
 import { Suspense } from 'react';
 import { logout } from '@/app/actions/auth';
 import { getCurrentUser } from '@/lib/dal';
 import { UserIcon } from './icons';
+import { SiteHeaderContent } from './site-header-content';
 
 const navLink =
   'inline-flex min-h-11 items-center gap-2 rounded-xl px-4 text-base font-semibold text-white/90 transition-colors hover:bg-white/15 hover:text-white';
 
 export function SiteHeader() {
   return (
-    <header className="border-b-4 border-maroon bg-header text-white">
-      <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
-        <Link href="/" className="flex items-center gap-3 rounded-xl">
-          {/* Decorative: the link text next to it already says "Windham Community Notifications". */}
-          <Image
-            src="/images/windham-logo.png"
-            alt=""
-            width={52}
-            height={52}
-            preload
-            className="size-12 shrink-0 rounded-full shadow-md sm:size-13"
-          />
-          <span>
-            <span className="block text-lg font-bold leading-tight sm:text-xl">Windham</span>
-            <span className="block text-sm leading-tight text-white/80">
-              Community Notifications
-            </span>
-          </span>
-        </Link>
-        <nav aria-label="Main" className="flex flex-wrap items-center gap-1">
-          <Link href="/" className={navLink}>
-            Alerts
-          </Link>
-          {/* Reads the session cookie, so it streams in without making the page dynamic. */}
-          <Suspense fallback={null}>
-            <StaffNav />
-          </Suspense>
-        </nav>
-      </div>
-    </header>
+    <SiteHeaderContent>
+      <Suspense fallback={null}>
+        <StaffNav />
+      </Suspense>
+    </SiteHeaderContent>
   );
 }
 
@@ -49,26 +24,39 @@ async function StaffNav() {
     return (
       <Link href="/login" className={navLink}>
         <UserIcon className="size-5" />
-        Staff sign in
+        <LanguageLabel english="Staff sign in" spanish="Acceso del personal" />
       </Link>
     );
   }
   return (
     <>
       <Link href="/publisher" className={navLink}>
-        Publisher
+        <LanguageLabel english="Publisher" spanish="Publicador" />
       </Link>
       {user.role === 'ADMIN' && (
         <Link href="/admin" className={navLink}>
-          Admin
+          <LanguageLabel english="Admin" spanish="Administración" />
         </Link>
       )}
       <form action={logout} className="flex items-center">
         <span className="hidden px-2 text-sm text-white/80 md:inline">{user.name}</span>
         <button type="submit" className={navLink}>
-          Sign out
+          <LanguageLabel english="Sign out" spanish="Cerrar sesión" />
         </button>
       </form>
+    </>
+  );
+}
+
+function LanguageLabel({ english, spanish }: { english: string; spanish: string }) {
+  return (
+    <>
+      <span className="language-en" lang="en">
+        {english}
+      </span>
+      <span className="language-es" lang="es">
+        {spanish}
+      </span>
     </>
   );
 }

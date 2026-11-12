@@ -8,12 +8,15 @@ import { BellIcon, MailIcon, PhoneIcon } from './icons';
 import { TurnstileWidget } from './turnstile-widget';
 import { SubmitButton } from './submit-button';
 import { card, checkbox, cx, input, label, Notice } from './ui';
+import { useLanguage } from './language-provider';
+import { translateCategory, translateSubscribeMessage } from '@/lib/i18n';
 
 export function SubscribeForm({ categories }: { categories: { id: string; name: string }[] }) {
   const [state, action] = useActionState<SubscribeState, FormData>(subscribe, {});
   const [viaEmail, setViaEmail] = useState(true);
   const [viaSms, setViaSms] = useState(false);
   const [emergencyOnly, setEmergencyOnly] = useState(false);
+  const { language, t } = useLanguage();
 
   const tile = (on: boolean) =>
     cx(
@@ -33,18 +36,16 @@ export function SubscribeForm({ categories }: { categories: { id: string; name: 
             <BellIcon className="size-6" />
           </span>
           <h2 id="sub-heading" className="text-2xl font-bold tracking-tight text-accent">
-            Get notified
+            {t('getNotified')}
           </h2>
         </div>
-        <p className="mt-2 text-muted">
-          Hear about alerts in Windham the moment they&rsquo;re posted. Free, and you can stop at
-          any time.
-        </p>
+        <p className="mt-2 text-muted">{t('subscribeDescription')}</p>
       </div>
 
       <form action={action} className="grid gap-4 px-5 py-5 sm:px-6">
+        <input type="hidden" name="language" value={language} />
         <fieldset className="grid gap-2">
-          <legend className="mb-2 text-base font-bold">How should we reach you?</legend>
+          <legend className="mb-2 text-base font-bold">{t('howReachYou')}</legend>
           <label className={tile(viaEmail)}>
             <input
               type="checkbox"
@@ -54,11 +55,11 @@ export function SubscribeForm({ categories }: { categories: { id: string; name: 
               className={checkbox}
             />
             <MailIcon className="size-5 text-brand" />
-            Email
+            {t('email')}
           </label>
           {viaEmail && (
             <label className={label}>
-              Email address
+              {t('emailAddress')}
               <input
                 type="email"
                 name="email"
@@ -78,11 +79,11 @@ export function SubscribeForm({ categories }: { categories: { id: string; name: 
               className={checkbox}
             />
             <PhoneIcon className="size-5 text-brand" />
-            Text message
+            {t('textMessage')}
           </label>
           {viaSms && (
             <label className={label}>
-              Mobile number
+              {t('mobileNumber')}
               <input
                 type="tel"
                 name="phone"
@@ -96,7 +97,7 @@ export function SubscribeForm({ categories }: { categories: { id: string; name: 
         </fieldset>
 
         <fieldset className="rounded-xl border border-border px-4 pb-4 pt-2">
-          <legend className="px-1 text-base font-bold">Topics</legend>
+          <legend className="px-1 text-base font-bold">{t('topics')}</legend>
           <label className="flex min-h-11 cursor-pointer items-center gap-3 text-base font-semibold">
             <input
               type="checkbox"
@@ -105,7 +106,7 @@ export function SubscribeForm({ categories }: { categories: { id: string; name: 
               onChange={(e) => setEmergencyOnly(e.target.checked)}
               className={checkbox}
             />
-            Emergency alerts only
+            {t('emergencyOnly')}
           </label>
           <div
             className={cx(
@@ -126,7 +127,7 @@ export function SubscribeForm({ categories }: { categories: { id: string; name: 
                   disabled={emergencyOnly}
                   className={checkbox}
                 />
-                {c.name}
+                {translateCategory(c.name, language)}
               </label>
             ))}
           </div>
@@ -135,29 +136,31 @@ export function SubscribeForm({ categories }: { categories: { id: string; name: 
         <HoneypotField />
         <TurnstileWidget action="subscribe" resetSignal={state} />
 
-        {state.error && <Notice kind="error">{state.error}</Notice>}
+        {state.error && (
+          <Notice kind="error">{translateSubscribeMessage(state.error, language)}</Notice>
+        )}
         {state.message && (
           <Notice kind="ok">
-            {state.message}
+            {translateSubscribeMessage(state.message, language)}
             {state.unsubscribeToken && (
               <>
                 {' '}
-                Keep this{' '}
+                {t('keepThis')}{' '}
                 <Link href={`/unsubscribe/${state.unsubscribeToken}`} className="underline">
-                  unsubscribe link
+                  {t('unsubscribeLink')}
                 </Link>{' '}
-                if you want to stop later.
+                {language === 'es'
+                  ? 'si desea cancelar más adelante.'
+                  : 'if you want to stop later.'}
               </>
             )}
           </Notice>
         )}
 
-        <SubmitButton pendingText="Saving…" className="w-full py-3 text-lg">
-          Subscribe
+        <SubmitButton pendingText={t('saving')} className="w-full py-3 text-lg">
+          {t('subscribe')}
         </SubmitButton>
-        <p className="text-sm text-muted">
-          Emergency alerts always go to every subscriber. Prototype: no messages are sent yet.
-        </p>
+        <p className="text-sm text-muted">{t('emergencyDeliveryNote')}</p>
       </form>
     </aside>
   );

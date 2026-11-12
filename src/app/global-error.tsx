@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { ErrorMessage } from '@/components/error-message';
+import { LanguageProvider } from '@/components/language-provider';
 import './globals.css';
 
 /**
@@ -22,9 +23,11 @@ export default function GlobalError({
   return (
     <html lang="en">
       <body className="min-h-screen px-4 py-10 font-sans">
-        <title>Temporarily unavailable · Windham Community Notifications</title>
-        <p className="text-center text-lg font-bold">Windham Community Notifications</p>
-        <ErrorMessage digest={error.digest} onRetry={retry} />
+        <LanguageProvider>
+          <title>Temporarily unavailable · Windham Community Notifications</title>
+          <p className="text-center text-lg font-bold">Windham Community Notifications</p>
+          <ErrorMessage digest={error.digest} onRetry={retry} />
+        </LanguageProvider>
       </body>
     </html>
   );

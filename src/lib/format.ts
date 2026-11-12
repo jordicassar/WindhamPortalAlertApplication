@@ -48,9 +48,9 @@ export function fromEasternInput(local: string): Date | null {
   return instant;
 }
 
-export function formatDateTime(value: Date | string | null | undefined): string {
+export function formatDateTime(value: Date | string | null | undefined, locale = 'en-US'): string {
   if (!value) return '';
-  return new Date(value).toLocaleString('en-US', {
+  return new Date(value).toLocaleString(locale, {
     timeZone: TIME_ZONE,
     month: 'short',
     day: 'numeric',

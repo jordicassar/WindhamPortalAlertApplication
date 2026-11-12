@@ -58,11 +58,11 @@ const STATUS_STYLE: Record<AlertStatus, string> = {
 const pill =
   'inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-0.5 text-sm font-bold';
 
-export function SeverityBadge({ severity }: { severity: Severity }) {
+export function SeverityBadge({ severity, label }: { severity: Severity; label?: string }) {
   return (
     <span className={cx(pill, SEVERITY_STYLE[severity])}>
       <SeverityIcon severity={severity} className="size-3.5" />
-      {SEVERITY_LABEL[severity]}
+      {label ?? SEVERITY_LABEL[severity]}
     </span>
   );
 }
